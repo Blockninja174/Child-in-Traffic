@@ -1,0 +1,328 @@
+#!/usr/bin/env python3
+##make while loop!!
+import pygame
+from pygame.locals import QUIT, KEYDOWN, K_BACKSPACE, K_RETURN
+import sys
+import random
+import math
+import time
+import os
+os.chdir('file path here')
+
+
+pygame.init()
+clock = pygame.time.Clock()
+
+# Initialize the joystick
+pygame.joystick.init()
+joystick = None
+if pygame.joystick.get_count() > 0:
+    joystick = pygame.joystick.Joystick(0)
+    joystick.init()
+
+# Load and play the background music
+pygame.mixer.music.load("music file path here")
+pygame.mixer.music.play(loops=-1)  # loops=-1 plays the music indefinitely
+
+# Construct the path to the font file
+game_directory = os.path.dirname(__file__)
+font_filename = "GresickMetal-51LXV (1).otf"
+font_path = os.path.join(game_directory, font_filename)
+
+# Load the font from the extracted file
+font = pygame.font.Font(font_path, 32)
+
+point_increase_timer = 0
+
+def draw_text(surface, text, color, font_size, x, y):
+    if text.isdigit():
+        default_font = pygame.font.Font(None, font_size)
+        text_surface = default_font.render(text, True, color)
+    else:
+        text_surface = font.render(text, True, color)
+    text_rect = text_surface.get_rect(midtop=(x, y))
+    surface.blit(text_surface, text_rect)
+
+# Set up the display
+width, height = 1920, 1080
+
+win = pygame.display.set_mode((width, height))
+pygame.display.set_caption("Child In Traffic")
+
+class Player:
+    def __init__(self, x, y, radius, color):
+        self.x = x
+        self.y = y
+        self.radius = radius
+        self.color = color
+        self.speed = 5
+
+    def draw(self, win):
+        pygame.draw.circle(win, self.color, (self.x, self.y), self.radius)
+
+    def collide_with(self, rect):
+        closest_x = max(rect.x, min(self.x, rect.x + rect.width))
+        closest_y = max(rect.y, min(self.y, rect.y + rect.height))
+        dist_x = self.x - closest_x
+        dist_y = self.y - closest_y
+        distance = math.sqrt((dist_x * dist_x) + (dist_y * dist_y))
+        return distance < self.radius
+
+class Rectangle:
+    def __init__(self, x, y, width, height, color, speed):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.color = color
+        self.speed = speed
+
+    def draw(self, win):
+        pygame.draw.rect(win, self.color, (self.x, self.y, self.width, self.height))
+
+    def update(self):
+        self.y += self.speed
+
+    def is_off_screen(self):
+        return self.y > height
+
+def save_score(player_name, score):
+    with open("scores.txt", "a") as file:
+        file.write(f"{player_name}: {score}\n")
+
+def load_scores():
+    scores = {}
+    if os.path.exists("scores.txt"):
+        with open("scores.txt", "r") as file:
+            for line in file:
+                parts = line.split(":")
+                name = parts[0].strip()
+                score = int(parts[1])
+                scores[name] = score
+    return scores
+
+def get_input():
+    text = ""
+    while True:
+        win.fill((200, 200, 200))
+        draw_text(win, "Enter your name:", (30, 30, 30), 32, width // 2, height // 3)
+        draw_text(win, text, (30, 30, 30), 32, width // 2, height // 2)
+
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == KEYDOWN:
+                if event.key == K_BACKSPACE:
+                    text = text[:-1]
+                elif event.key == K_RETURN:
+                    return text
+                else:
+                    text += event.unicode
+
+        pygame.display.flip()
+
+backstories = [
+    "The child was chasing a runaway ball when a car suddenly appeared.",
+    "After a long day at school, the child was distracted and didn't see the oncoming traffic.",
+    "The child was riding a bike and lost control, veering into the busy road.",
+    "Trying to catch the school bus, the child dashed across the street without looking.",
+    "The child was playing a game with friends and didn't notice the traffic signal change.",
+    "Distracted by their phone, the child wandered into the traffic without realizing.",
+    "The child was helping an elderly person cross the street when tragedy struck.",
+    "In a rush to get home for dinner, the child didn't notice the speeding car.",
+    "The Child did not want to live anymore. After contemplating his life, he decided to end it in the best way possible, death by car.",
+    "YA BOI WAS HIT BY A BIG ASS CAR.",
+    "Lured by the sweet smell of ice cream from the truck, the child ran into the road, only to be flattened by a car.",
+    "Dressed as a ninja, the child tried to perform an epic street-crossing stunt and failed miserably.",
+    "In an attempt to impress their friends, the child tried to jump over a moving car and didn't quite make it.",
+    "The child, pretending to be a superhero, decided to stop traffic with their 'super strength' and got splatted instead.",
+    "The child thought they saw a unicorn on the other side of the street and darted across without checking for cars.",
+    "Chasing after a runaway kite, the child didn't notice the massive eighteen-wheeler bearing down on them.",
+    "Trying to catch a falling star, the child ran into the street and met their end under the wheels of a truck.",
+    "Believing they were in a video game, the child attempted to 'respawn' by getting hit by a car.",
+    "During an intense game of tag, the child zigged when they should have zagged, right into the path of a speeding car.",
+    "The child, convinced they had super speed, dashed across the road to prove it, only to be painfully proven wrong.", "L"
+]
+
+player = Player(width // 2, height // 2, 20, (200, 200, 200))
+rectangles = []
+gap_size = 100
+difficulty = 1
+
+last_rect_creation_time = pygame.time.get_ticks()
+rect_creation_interval = random.randint(2000, 3000)  # 2-3 seconds in milliseconds
+min_rect_creation_interval = 200  # Minimum creation interval
+
+player_score = 0
+
+title_screen = True
+running = True
+game_over = False
+score_saved = False  # Flag to ensure score is saved only once
+
+selected_backstory = ""
+
+def title_screen_display():
+    global running
+    while True:
+        win.fill((100, 100, 100))
+        draw_text(win, "Child in Traffic (True Story)", (200, 200, 200), 72, width // 2, height // 6)
+        draw_text(win, "Press 'P' to Play or 'A' Button", (200, 200, 200), 72, width // 2, height // 3)
+        draw_text(win, "Press 'Q' to Quit or 'B' Button", (200, 200, 200), 72, width // 2, height // 2)
+        pygame.display.update()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_p:
+                    return  # Exit the title screen to start the game
+                elif event.key == pygame.K_q:
+                    running = False
+                    return
+            elif event.type == pygame.JOYBUTTONDOWN:
+                if joystick:
+                    if joystick.get_button(0):  # A button
+                        return  # Exit the title screen to start the game
+                    elif joystick.get_button(1):  # B button
+                        running = False
+                        return
+
+# Display the title screen
+title_screen_display()
+
+# Ask for player's name
+player_name = get_input()
+
+while running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        elif event.type == pygame.JOYBUTTONDOWN:
+            if joystick:
+                if event.button == 0:  # A button
+                    if game_over:
+                        running = False
+                elif event.button == 1:  # B button
+                    running = False
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_e:  # "E" for Restart
+                if game_over:
+                    # Reset the game state
+                    # Save the score before resetting
+                    save_score(player_name, player_score)
+                    
+                    
+                    # Reset game state
+                    player_score = 0
+                    player.x = width // 2
+                    player.y = height // 2
+                    rectangles.clear()  # Clear all rectangles
+                    game_over = False
+                    score_saved = False  # Reset the score saved flag
+                    selected_backstory = ""  # Reset the backstory
+                    difficulty = 1  # Reset difficulty
+                    last_rect_creation_time = pygame.time.get_ticks()
+                    rect_creation_interval = random.randint(2000, 3000)  # Reset rectangle creation interval
+                    point_increase_timer = 0  # Reset point increase timer
+                    
+                    # Return to the title screen
+                    title_screen_display()  # Call the title screen function again
+                    player_name = get_input()
+            elif event.key == pygame.K_p:  # "P" for Quit
+                running = False
+
+    if game_over:
+        win.fill((100, 100, 100))
+        draw_text(win, "Game Over", (200, 200, 200), 100, width // 2, height // 5)
+        draw_text(win, f"Your Score: {player_score}", (200, 200, 200), 36, width // 2, height // 4)
+        draw_text(win, "Press 'E' to Restart or 'P' to Quit", (200, 200, 200), 24, width // 2, height // 2.2)
+
+        if not score_saved:
+            save_score(player_name, player_score)
+            score_saved = True
+            selected_backstory = random.choice(backstories)
+
+        scores = load_scores()
+        top_scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)[:5]
+        if top_scores:
+            draw_text(win, "Top Scores:", (200, 200, 200), 300, width // 2, height // 2 )
+            y_offset = 0
+            for i, (name, score) in enumerate(top_scores):
+                draw_text(win, f"{i+1}. {name}: {score}", (200, 200, 200), 24, width // 2, height // 2 + 50 + y_offset)
+                y_offset += 30
+
+        draw_text(win, selected_backstory, (200, 200, 200), 24, width // 2, height - 100)
+
+        pygame.display.update()
+    else:
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_LEFT]:
+            player.x -= player.speed
+        if keys[pygame.K_RIGHT]:
+            player.x += player.speed
+        if keys[pygame.K_UP]:
+            player.y -= player.speed
+        if keys[pygame.K_DOWN]:
+            player.y += player.speed
+
+        if joystick:
+            axis0 = joystick.get_axis(0)
+            axis1 = joystick.get_axis(1)
+            player.x += int(axis0 * player.speed)
+            player.y += int(axis1 * player.speed)
+
+        player.x = max(player.radius, min(player.x, width - player.radius))
+        player.y = max(player.radius, min(player.y, height - player.radius))
+
+        for rect in rectangles:
+            rect.update()
+        rectangles = [rect for rect in rectangles if not rect.is_off_screen()]
+
+        for rect in rectangles:
+            if player.collide_with(rect):
+                game_over = True
+                break
+
+        current_time = pygame.time.get_ticks()
+        time_until_next_rect = max(0, int(rect_creation_interval - (current_time - last_rect_creation_time)))
+
+        if current_time - last_rect_creation_time >= rect_creation_interval:
+            last_rect_creation_time = current_time
+            rect_x = random.randint(0, width - 50)
+            rect_y = -50
+            rect_width = 50
+            rect_height = random.randint(50, 150)
+            rect_color = (30, 30, 30)
+            rect_speed = random.randint(5, 10)
+            rectangles.append(Rectangle(rect_x, rect_y, rect_width, rect_height, rect_color, rect_speed))
+
+            difficulty += 0.1
+            rect_creation_interval = max(min_rect_creation_interval, rect_creation_interval - 300)
+
+        if point_increase_timer > 60:
+            player_score += 1
+            point_increase_timer = 0
+        else:
+            point_increase_timer += 1
+
+        if player_score >= 200:
+            game_over = True
+
+        win.fill((100, 100, 100))
+        player.draw(win)
+
+        for rect in rectangles:
+            rect.draw(win)
+
+        draw_text(win, f"Next Rectangle in: {time_until_next_rect/1000:.1f} seconds", (200, 200, 200), 24, width // 2, 30)
+        draw_text(win, f"Score: {player_score}", (200, 200, 200), 24, width // 2, 60)
+
+        pygame.display.update()
+        clock.tick(60)
+
+pygame.quit()
+sys.exit()
+
