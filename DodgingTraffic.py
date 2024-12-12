@@ -252,7 +252,7 @@ backstories = [
     "The child was wearing a fursuit. Someone apperently called the SWAT on them, and \"it\" got splattered in front of a cheering crowd. The end.",
     "YOU FAT BALD BASTARD YOU PIECE OF SUBHUMAN TRASH 2000 YEARS OF CONSTANT EVOLUTION TO CREATE A HAIRLESS FUCKING COCONUT MY GOD WHAT IS WRONG WITH YOU???",
 ]
-player = Player(width// 2, height // 2, 20, (200, 200, 200))""
+player = Player(width// 2, height // 2, 20, (200, 200, 200))
 rectangles = []
 gap_size = 100
 difficulty = 1
@@ -279,8 +279,8 @@ def title_screen_display():
     while True:
         win.fill((100, 100, 100))
         draw_text(win, "Child in Traffic (True Story)", (200, 200, 200), 72, width // 2, height // 6)
-        draw_text(win, "Press 'P' to Play or 'A' Button", (200, 200, 200), 72, width // 2, height // 3)
-        draw_text(win, "Press 'Q' to Quit or 'B' Button", (200, 200, 200), 72, width // 2, height // 2)
+        draw_text(win, "Press the Any key to Play or 'A' Button", (200, 200, 200), 72, width // 2, height // 3)
+        draw_text(win, "Press 'Esc' to Quit or 'B' Button", (200, 200, 200), 72, width // 2, height // 2)
         pygame.display.update()
 
         for event in pygame.event.get():
@@ -288,9 +288,9 @@ def title_screen_display():
                 pygame.quit()
                 sys.exit()
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_p:
+                if event.key != pygame.K_ESCAPE:
                     return  # Exit the title screen to start the game
-                elif event.key == pygame.K_q:
+                elif event.key == pygame.K_ESCAPE:
                     running = False
                     return
             elif event.type == pygame.JOYBUTTONDOWN:
