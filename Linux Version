@@ -7,7 +7,7 @@ import random
 import math
 import time
 import os
-os.chdir('file path here')
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 
 pygame.init()
@@ -21,7 +21,7 @@ if pygame.joystick.get_count() > 0:
     joystick.init()
 
 # Load and play the background music
-pygame.mixer.music.load("music file path here")
+pygame.mixer.music.load("metal-dark-matter-111451.mp3")
 pygame.mixer.music.play(loops=-1)  # loops=-1 plays the music indefinitely
 
 # Construct the path to the font file
