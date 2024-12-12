@@ -301,6 +301,18 @@ def title_screen_display():
                         running = False
                         return
 
+def reset_game():
+    global player, rectangles, player_score, game_over, score_saved, last_rect_creation_time, rect_creation_interval, difficulty
+    player = Player(width // 2, height // 2, 20, (200, 200, 200))
+    rectangles = []
+    player_score = 0
+    game_over = False
+    score_saved = False
+    last_rect_creation_time = pygame.time.get_ticks()
+    rect_creation_interval = random.randint(2000, 3000)
+    difficulty = 1
+    title_screen_display()
+
 # Display the title screen
 title_screen_display()
 
@@ -324,6 +336,8 @@ while running:
     if game_over:
         win.fill((100, 100, 100))
         draw_text(win, "Game Over", (200, 200, 200), 100, width // 2, height // 3)
+        draw_text(win, "Press any key to play again", (200, 200, 200), 36, width // 2, height // 3 + 40)
+        draw_text(win, "Press 'Esc' or 'B' button to quit", (200, 200, 200), 36, width // 2, height // 3 + 80)
         draw_text(win, f"Your Score: {player_score}", (200, 200, 200), 36, width // 2, height // 2)
         draw_text(win, "", (200, 200, 200), 15, width // 2, height * 2 // 3 - 40)
         
@@ -347,11 +361,16 @@ while running:
         pygame.display.update()
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
-                running = False
+                if event.key == pygame.K_ESCAPE:
+                    running = False
+                else:
+                    reset_game()
             elif event.type == pygame.JOYBUTTONDOWN:
                 if joystick:
-                    if event.button == 0:  # A button
+                    if event.button == 1:  # B button
                         running = False
+                    else:
+                        reset_game()
 
     else:
         keys = pygame.key.get_pressed()
