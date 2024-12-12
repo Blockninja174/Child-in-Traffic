@@ -2,7 +2,6 @@ import pygame
 import sys
 import random
 import math
-import time
 import os
 from pygame.locals import *
 
@@ -16,14 +15,23 @@ if pygame.joystick.get_count() > 0:
     joystick = pygame.joystick.Joystick(0)
     joystick.init()
 
+# Helper function to find resource paths
+def resource_path(relative_path):
+    try:
+        # If the script is bundled by PyInstaller, use _MEIPASS
+        base_path = sys._MEIPASS
+    except AttributeError:
+        # Otherwise, use the script's directory
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
 # Load and play the background music
-pygame.mixer.music.load("metal-dark-matter-111451.mp3")
+pygame.mixer.music.load(resource_path("metal-dark-matter-111451.mp3"))
 pygame.mixer.music.play(loops=-1)  # loops=-1 plays the music indefinitely
 
 # Construct the path to the font file
-game_directory = os.path.dirname(__file__)
-font_filename = "GresickMetal-51LXV (1).otf"
-font_path = os.path.join(game_directory, font_filename)
+font_path = resource_path("GresickMetal-51LXV (1).otf")
 
 # Load the font from the extracted file
 font = pygame.font.Font(font_path, 32)
@@ -40,7 +48,7 @@ def draw_text(surface, text, color, font_size, x, y):
     surface.blit(text_surface, text_rect)
 
 # Set up the display
-width, height = 1920,1080
+width, height = 1920, 1080
 win = pygame.display.set_mode((width, height))
 pygame.display.set_caption("Child In Traffic")
 
