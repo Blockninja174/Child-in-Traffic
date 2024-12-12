@@ -82,8 +82,9 @@ class Rectangle:
         return self.y > height
 
 def save_score(player_name, score):
-    with open("scores.txt", "a") as file:
-        file.write(f"{player_name}: {score}\n")
+    if score > 9:
+        with open("scores.txt", "a") as file:
+            file.write(f"{player_name}: {score}\n")
 
 def load_scores():
     scores = {}
