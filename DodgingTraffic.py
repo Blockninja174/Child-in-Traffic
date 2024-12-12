@@ -212,29 +212,47 @@ def get_input():
         return get_input_with_keyboard()
 
 backstories = [
+    # Sensible Stories
+    "Somewhere, the child heard the GigaChad song before he was cruched",
     "The child was chasing a runaway ball when a car suddenly appeared.",
-    "After a long day at school, the child was distracted and didn't see the oncoming traffic.",
     "The child was riding a bike and lost control, veering into the busy road.",
+    "In a rush to get home for dinner, the child didn't notice the speeding car.",
+    "The child was helping an elderly person cross the street when tragedy struck.",
+    "Distracted by their phone, the child wandered into the traffic without realizing.",
     "Trying to catch the school bus, the child dashed across the street without looking.",
     "The child was playing a game with friends and didn't notice the traffic signal change.",
-    "Distracted by their phone, the child wandered into the traffic without realizing.",
-    "The child was helping an elderly person cross the street when tragedy struck.",
-    "In a rush to get home for dinner, the child didn't notice the speeding car.",
-    "The Child did not want to live anymore. After contemplating his life, he decided to end it in the best way possible, death by car.",
-    "YA BOI WAS HIT BY A BIG ASS CAR.",
-    "Lured by the sweet smell of ice cream from the truck, the child ran into the road, only to be flattened by a car.",
-    "Dressed as a ninja, the child tried to perform an epic street-crossing stunt and failed miserably.",
-    "In an attempt to impress their friends, the child tried to jump over a moving car and didn't quite make it.",
-    "The child, pretending to be a superhero, decided to stop traffic with their 'super strength' and got splatted instead.",
-    "The child thought they saw a unicorn on the other side of the street and darted across without checking for cars.",
-    "Chasing after a runaway kite, the child didn't notice the massive eighteen-wheeler bearing down on them.",
-    "Trying to catch a falling star, the child ran into the street and met their end under the wheels of a truck.",
+    "After a long day at school, the child was distracted and didn't see the oncoming traffic.",
     "Believing they were in a video game, the child attempted to 'respawn' by getting hit by a car.",
+    "Dressed as a ninja, the child tried to perform an epic street-crossing stunt and failed miserably.",
+    "Chasing after a runaway kite, the child didn't notice the massive eighteen-wheeler bearing down on them.",
+    "In an attempt to impress their friends, the child tried to jump over a moving car and didn't quite make it.",
+    "Trying to catch a falling star, the child ran into the street and met their end under the wheels of a truck.",
+    "The child thought they saw a unicorn on the other side of the street and darted across without checking for cars.",
+    "Lured by the sweet smell of ice cream from the truck, the child ran into the road, only to be flattened by a car.",
+    "The child, convinced they had super speed, dashed across the road to prove it, only to be painfully proven wrong.", 
     "During an intense game of tag, the child zigged when they should have zagged, right into the path of a speeding car.",
-    "The child, convinced they had super speed, dashed across the road to prove it, only to be painfully proven wrong.", "L"
+    "A child was crossing the highway, when a HUGE caravan of trucks came zooming at him. The child was never seen again.",
+    "The child, pretending to be a superhero, decided to stop traffic with their 'super strength' and got splatted instead.",
+    "As the innocent little child crossed the street, the driver of the car was too busy watching anime to notice the child.",
+    "The Child did not want to live anymore. After contemplating his life, he decided to end it in the best way possible, death by car.",
+    # Quirky Stories
+    "Well, he gone",
+    "Thats what you get for not looking both ways before crossing the street.",
+    "My brother was hit by a car once. He's fine now, but he's a little... flat-brained.",
+    # Minor "Humor" Stories
+    "L",
+    "F",
+    "Rest in Peperonis",
+    # COMPLETE BRAINROT REMOVE IF ADULTS PLAY PLEASE!!!!!
+    "YA BOI WAS HIT BY A BIG ASS TRUCK.",
+    "BEEP BEEP MO- (The driver's lawyer advised him not to finish this sentence)",
+    "Bro thought he was in GTAVI and tried to steal a car. He got hit by a car instead.",
+    "The van with free candy didn't have free candy... nor black men... nor furries... nor drug addicts..."
+    "The little shit got yeeted into the shadow realm by some booze-cranked driver in his skyscraper-like pimped-up diesel 48ft Uhaul.",
+    "The child was wearing a fursuit. Someone apperently called the SWAT on them, and \"it\" got splattered in front of a cheering crowd. The end.",
+    "YOU FAT BALD BASTARD YOU PIECE OF SUBHUMAN TRASH 2000 YEARS OF CONSTANT EVOLUTION TO CREATE A HAIRLESS FUCKING COCONUT MY GOD WHAT IS WRONG WITH YOU???",
 ]
-
-player = Player(width// 2, height // 2, 20, (200, 200, 200))
+player = Player(width// 2, height // 2, 20, (200, 200, 200))""
 rectangles = []
 gap_size = 100
 difficulty = 1
