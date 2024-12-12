@@ -279,8 +279,8 @@ def title_screen_display():
     while True:
         win.fill((100, 100, 100))
         draw_text(win, "Child in Traffic (True Story)", (200, 200, 200), 72, width // 2, height // 6)
-        draw_text(win, "Press the Any key to Play or 'A' Button", (200, 200, 200), 72, width // 2, height // 3)
-        draw_text(win, "Press 'Esc' to Quit or 'B' Button", (200, 200, 200), 72, width // 2, height // 2)
+        draw_text(win, "Press the Any key or 'A' Button to Play", (200, 200, 200), 72, width // 2, height // 3)
+        draw_text(win, "Press 'Esc' or 'B' Button to Quit", (200, 200, 200), 72, width // 2, height // 2)
         pygame.display.update()
 
         for event in pygame.event.get():
@@ -311,14 +311,16 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                game_over = True
         elif event.type == pygame.JOYBUTTONDOWN:
             if joystick:
                 if event.button == 0:  # A button
                     if game_over:
                         running = False
                 elif event.button == 1:  # B button
-                    running = False
-
+                    game_over = True
     if game_over:
         win.fill((100, 100, 100))
         draw_text(win, "Game Over", (200, 200, 200), 100, width // 2, height // 3)
