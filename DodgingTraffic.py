@@ -15,7 +15,7 @@ if pygame.joystick.get_count() > 0:
     joystick = pygame.joystick.Joystick(0)
     joystick.init()
 
-# Helper function to find resource paths
+# Helper function to find resource paths for Pyninstaller
 def resource_path(relative_path):
     try:
         # If the script is bundled by PyInstaller, use _MEIPASS
@@ -48,7 +48,8 @@ def draw_text(surface, text, color, font_size, x, y):
     surface.blit(text_surface, text_rect)
 
 # Set up the display
-width, height = 1920, 1080
+displayInfo = pygame.display.Info()
+width, height = displayInfo.current_w, displayInfo.current_h
 win = pygame.display.set_mode((width, height))
 pygame.display.set_caption("Child In Traffic")
 
