@@ -18,25 +18,27 @@ if pygame.joystick.get_count() > 0:
 # Helper function to find resource paths for Pyninstaller
 def resource_path(relative_path):
     try:
-        # If the script is bundled by PyInstaller, use _MEIPASS
         base_path = sys._MEIPASS
     except AttributeError:
-        # Otherwise, use the script's directory
         base_path = os.path.abspath(".")
-
     return os.path.join(base_path, relative_path)
 
-# Load and play the background music
-pygame.mixer.music.load(resource_path("metal-dark-matter-111451.mp3"))
-pygame.mixer.music.play(loops=-1)  # loops=-1 plays the music indefinitely
+def play_music(song):
+    global music_Current
+    if song == music_Current:
+        pass
+    else:
+        pygame.mixer.music.stop()
+        pygame.mixer.music.load(resource_path(song))
+        pygame.mixer.music.play(loops=-1)
+        music_Current = song
 
-# Construct the path to the font file
-font_path = resource_path("GresickMetal-51LXV (1).otf")
+def play_sfx(sound):
+    pygame.mixer.Sound.play(pygame.mixer.Sound(resource_path(sound)))
 
-# Load the font from the extracted file
+font_path = resource_path("GresickMetal-51LXV.otf")
+
 font = pygame.font.Font(font_path, 32)
-
-point_increase_timer = 0
 
 def draw_text(surface, text, color, font_size, x, y):
     if text.isdigit():
@@ -257,6 +259,13 @@ player = Player(width// 2, height // 2, 20, (200, 200, 200))
 rectangles = []
 gap_size = 100
 difficulty = 1
+point_increase_timer = 0
+
+sfx_Death = "audio/sfx_splat.mp3"
+music_MainMenu = "audio/music_mariokartwii.mp3"
+music_Game = "audio/music_metal-dark-matter-111451.mp3"
+music_GameOver = "audio/music_lose.mp3"
+music_Current = ""
 
 last_rect_creation_time = pygame.time.get_ticks()
 rect_creation_interval = random.randint(2000, 3000)  # 2-3 seconds in milliseconds
@@ -277,6 +286,7 @@ selected_backstory = ""
 
 def title_screen_display():
     global running
+    play_music(music_MainMenu)
     while True:
         win.fill((100, 100, 100))
         draw_text(win, "Child in Traffic (True Story)", (200, 200, 200), 72, width // 2, height // 6)
@@ -313,13 +323,14 @@ def reset_game():
     rect_creation_interval = random.randint(2000, 3000)
     difficulty = 1
     title_screen_display()
+    get_input()
+    play_music(music_Game)
 
 # Display the title screen
+play_music(music_MainMenu)
 title_screen_display()
-
-# Ask for player's name
 player_name = get_input()
-
+play_music(music_Game)
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -335,6 +346,7 @@ while running:
                 elif event.button == 1:  # B button
                     game_over = True
     if game_over:
+        play_music(music_GameOver)
         win.fill((100, 100, 100))
         draw_text(win, "Game Over", (200, 200, 200), 100, width // 2, height // 3)
         draw_text(win, "Press any key to play again", (200, 200, 200), 36, width // 2, height // 3 + 40)
@@ -407,6 +419,7 @@ while running:
 
         for rect in rectangles:
             if player.collide_with(rect):
+                play_sfx(sfx_Death) 
                 game_over = True
                 break
 
