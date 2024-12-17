@@ -363,7 +363,6 @@ def reset_game():
 
     title_screen_display()
     get_input()
-    get_difficulty()
     play_music(music_Game)
 
 # Display the title screen
