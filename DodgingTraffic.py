@@ -262,7 +262,7 @@ backstories = [
 player = Player(width// 2, height // 2, 20, (200, 200, 200))
 rectangles = []
 gap_size = 100
-difficulty = 1
+ramp_up = 1
 point_increase_timer = 0
 
 sfx_Death = "audio/sfx_splat.mp3"
@@ -280,7 +280,7 @@ x_axis_changed = 0
 y_axis_changed = 0
 
 player_score = 0
-
+difficulty = 0
 title_screen = True
 running = True
 game_over = False
@@ -293,10 +293,10 @@ car_counter = 0  # Initialize car counter
 cars_per_spawn = 1
 
 def title_screen_display():
-    global running, cars_per_spawn  
+    global running, cars_per_spawn, difficulty 
     play_music(music_MainMenu)
     selected_option = 0
-    options = ["Easy", "Medium", "Rush Hour", ""]
+    options = ["Easy", "Medium", "Rush Hour", "" ] #<<feature not bug
     
     while True:
         win.fill((100, 100, 100))
@@ -323,13 +323,13 @@ def title_screen_display():
                     selected_option = (selected_option + 1) % len(options)
                 elif event.key == pygame.K_RETURN:
                     if selected_option == 0:
-                        cars_per_spawn = 1
+                        difficulty = 0
                     elif selected_option == 1:
-                        cars_per_spawn = 2
+                        difficulty = 1
                     elif selected_option == 2:
-                        cars_per_spawn = 3
+                        difficulty = 2
                     elif selected_option == 3:
-                        cars_per_spawn = 15
+                        difficulty = 3
                     return
             elif event.type == pygame.JOYHATMOTION:
                 if joystick:
@@ -339,19 +339,18 @@ def title_screen_display():
                     elif hat[1] == -1:
                         selected_option = (selected_option + 1) % len(options)
             elif event.type == pygame.JOYBUTTONDOWN:
-                if event.button == 0: # A button
-                    if selected_option == 0:
-                        cars_per_spawn = 1
-                    elif selected_option == 1:
-                        cars_per_spawn = 2
-                    elif selected_option == 2:
-                        cars_per_spawn = 3
-                    elif selected_option == 3:
-                        cars_per_spawn = 15
-                    return
+                if selected_option == 0:
+                    difficulty = 0
+                elif selected_option == 1:
+                    difficulty = 1
+                elif selected_option == 2:
+                    difficulty = 2
+                elif selected_option == 3:
+                    difficulty = 3
+                return
 
 def reset_game():
-    global player, rectangles, player_score, game_over, score_saved, last_rect_creation_time, rect_creation_interval, difficulty, car_counter
+    global player, rectangles, player_score, game_over, score_saved, last_rect_creation_time, rect_creation_interval, ramp_up, car_counter
     player = Player(width // 2, height // 2, 20, (200, 200, 200))
     rectangles = []
     player_score = 0
@@ -359,11 +358,12 @@ def reset_game():
     score_saved = False
     last_rect_creation_time = pygame.time.get_ticks()
     rect_creation_interval = random.randint(2000, 3000)
-    difficulty = 1
+    ramp_up = 1
     car_counter = 0
 
     title_screen_display()
     get_input()
+    get_difficulty()
     play_music(music_Game)
 
 # Display the title screen
@@ -465,12 +465,21 @@ while running:
                 game_over = True
                 break
 
+        if difficulty == 0:
+            cars_per_spawn = 1
+        elif difficulty == 1:
+            cars_per_spawn = 2
+        elif difficulty == 2:
+            cars_per_spawn = 3
+        elif difficulty == 3 and player_score < 11:
+            cars_per_spawn = 0
+        elif difficulty == 3 and player_score >= 11:
+            cars_per_spawn = 50
         current_time = pygame.time.get_ticks()
         time_until_next_rect = max(0, int(rect_creation_interval - (current_time - last_rect_creation_time)))
-
         if current_time - last_rect_creation_time >= rect_creation_interval:
             last_rect_creation_time = current_time
-            for _ in range(cars_per_spawn):
+            for i in range(cars_per_spawn):
                 rect_x = random.randint(0, width - 50)
                 rect_y = -50
                 rect_width = 50
@@ -480,7 +489,7 @@ while running:
                 rectangles.append(Rectangle(rect_x, rect_y, rect_width, rect_height, rect_color, rect_speed))
 
             car_counter += cars_per_spawn  # Increment car counter by the number of cars spawned
-            difficulty += 0.1
+            ramp_up += 0.1
             rect_creation_interval = max(min_rect_creation_interval, rect_creation_interval - 300)
 
         if point_increase_timer > 60:
