@@ -88,13 +88,11 @@ def get_input():
         draw_text(win, text, (30, 30, 30), 32, width // 2, height // 3)
 
         cursor_timer += 1
-        if cursor_timer % 30 == 0:
+        if cursor_timer % 1000 == 0:  # Adjust this value to control blink speed
             cursor_blink = not cursor_blink
 
-        if cursor_blink and len(text) < 10:
-            draw_text(win, text + "|", (30, 30, 30), 32, width // 2, height // 3)
-        else:
-            draw_text(win, text, (30, 30, 30), 32, width // 2, height // 3)
+        if cursor_blink:
+            draw_text(win, "|", (30, 30, 30), 32, width // 2 + font.size(text)[0] // 2, height // 3)
 
         if joystick and pygame.joystick.get_count() > 0:
             for r, row_keys in enumerate(keys_layout):
