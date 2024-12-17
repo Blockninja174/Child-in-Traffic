@@ -360,7 +360,6 @@ def reset_game():
     rect_creation_interval = random.randint(2000, 3000)
     ramp_up = 1
     car_counter = 0
-
     title_screen_display()
     get_input()
     play_music(music_Game)
