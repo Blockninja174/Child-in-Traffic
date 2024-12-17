@@ -5,6 +5,14 @@ import math
 import os
 from pygame.locals import *
 
+# Helper function to find resource paths for Pyninstaller
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except AttributeError:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
+
 pygame.init()
 clock = pygame.time.Clock()
 
@@ -15,13 +23,127 @@ if pygame.joystick.get_count() > 0:
     joystick = pygame.joystick.Joystick(0)
     joystick.init()
 
-# Helper function to find resource paths for Pyninstaller
-def resource_path(relative_path):
-    try:
-        base_path = sys._MEIPASS
-    except AttributeError:
-        base_path = os.path.abspath(".")
-    return os.path.join(base_path, relative_path)
+font_path = resource_path("GresickMetal-51LXV.otf")
+font = pygame.font.Font(font_path, 32)
+
+displayInfo = pygame.display.Info()
+width, height = displayInfo.current_w, displayInfo.current_h
+win = pygame.display.set_mode((width, height))
+pygame.display.set_caption("Child In Traffic")
+
+class Player:
+    def __init__(self, x, y, radius, color):
+        self.x = x
+        self.y = y
+        self.radius = radius
+        self.color = color
+        self.speed = 5
+
+    def draw(self, win):
+        pygame.draw.circle(win, self.color, (self.x, self.y), self.radius)
+
+    def collide_with(self, rect):
+        closest_x = max(rect.x, min(self.x, rect.x + rect.width))
+        closest_y = max(rect.y, min(self.y, rect.y + rect.height))
+        dist_x = self.x - closest_x
+        dist_y = self.y - closest_y
+        distance = math.sqrt((dist_x * dist_x) + (dist_y * dist_y))
+        return distance < self.radius
+
+class Rectangle:
+    def __init__(self, x, y, width, height, color, speed):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.color = color
+        self.speed = speed
+
+    def draw(self, win):
+        pygame.draw.rect(win, self.color, (self.x, self.y, self.width, self.height))
+
+    def update(self):
+        self.y += self.speed
+
+    def is_off_screen(self):
+        return self.y > height
+
+player = Player(width// 2, height // 2, 20, (200, 200, 200))
+rectangles = []
+gap_size = 100
+ramp_up = 1
+point_increase_timer = 0
+
+sfx_Death = "audio/sfx_splat.mp3"
+music_MainMenu = "audio/music_mariokartwii.mp3"
+music_Game = "audio/music_metal-dark-matter-111451.mp3"
+music_GameOver = "audio/music_lose.mp3"
+music_Current = ""
+
+last_rect_creation_time = pygame.time.get_ticks()
+rect_creation_interval = random.randint(2000, 3000)
+min_rect_creation_interval = 200
+
+x_axis_changed = 0
+y_axis_changed = 0
+
+player_score = 0
+difficulty = 0
+is_paused = False
+title_screen = True
+running = True
+game_over = False
+score_saved = False
+
+selected_backstory = ""
+
+car_counter = 0
+cars_per_spawn = 1
+
+backstories = [
+    # Sensible Stories
+    "Somewhere, the child heard the GigaChad song before he was cruched",
+    "The child was chasing a runaway ball when a car suddenly appeared.",
+    "The child was riding a bike and lost control, veering into the busy road.",
+    "In a rush to get home for dinner, the child didn't notice the speeding car.",
+    "The child was helping an elderly person cross the street when tragedy struck.",
+    "Distracted by their phone, the child wandered into the traffic without realizing.",
+    "Trying to catch the school bus, the child dashed across the street without looking.",
+    "The child was playing a game with friends and didn't notice the traffic signal change.",
+    "After a long day at school, the child was distracted and didn't see the oncoming traffic.",
+    "Believing they were in a video game, the child attempted to 'respawn' by getting hit by a car.",
+    "Dressed as a ninja, the child tried to perform an epic street-crossing stunt and failed miserably.",
+    "Chasing after a runaway kite, the child didn't notice the massive eighteen-wheeler bearing down on them.",
+    "In an attempt to impress their friends, the child tried to jump over a moving car and didn't quite make it.",
+    "Trying to catch a falling star, the child ran into the street and met their end under the wheels of a truck.",
+    "The child thought they saw a unicorn on the other side of the street and darted across without checking for cars.",
+    "Lured by the sweet smell of ice cream from the truck, the child ran into the road, only to be flattened by a car.",
+    "The child, convinced they had super speed, dashed across the road to prove it, only to be painfully proven wrong.", 
+    "During an intense game of tag, the child zigged when they should have zagged, right into the path of a speeding car.",
+    "A child was crossing the highway, when a HUGE caravan of trucks came zooming at him. The child was never seen again.",
+    "The child, pretending to be a superhero, decided to stop traffic with their 'super strength' and got splatted instead.",
+    "As the innocent little child crossed the street, the driver of the car was too busy watching anime to notice the child.",
+    "The Child did not want to live anymore. After contemplating his life,\n he decided to end it in the best way possible, death by car.",
+    # Quirky Stories
+    "Well, he gone",
+    "Thats what you get for not looking both ways before crossing the street.",
+    "My brother was hit by a car once. He's fine now, but he's a little... flat-brained.",
+    # Minor "Humor" Stories
+    "L",
+    "F",
+    "Rest in Peperonis",
+    "Uh oh!\n Stinky!",
+    # COMPLETE BRAINROT REMOVE IF ADULTS PLAY PLEASE!!!!!
+    "YA BOI WAS HIT BY A BIG ASS TRUCK.",
+    "Oh, they're gonna have to glue you back together... IN HELL!",
+    "BEEP BEEP MO- (The driver's lawyer advised him not to finish this sentence)",
+    "Bro thought he was in GTAVI and tried to steal a car. He got hit by a car instead.",
+    "The van with free candy didn't have free candy... nor black men... nor furries... nor drug addicts...",
+    "The little shit got yeeted into the shadow realm by some\n booze-cranked driver in his skyscraper-like pimped-up diesel 48ft Uhaul.",
+    "The child was wearing a fursuit. Someone apperently called the SWAT on them,\n and \"it\" got splattered in front of a cheering crowd. The end.",
+    "YOU FAT BALD BASTARD YOU PIECE OF SUBHUMAN TRASH 2000 YEARS OF CONSTANT EVOLUTION TO CREATE\n A HAIRLESS FUCKING COCONUT MY GOD WHAT IS WRONG WITH YOU???",
+    "Are ya listening? Okay. Grass grows, birds, fly, sun shines, and brudda?\n I HURT PEOPLE! Im a force of nature. If you were from, where I was from, you'd be from, where I was from. You'd be ded."
+]
 
 def play_music(song):
     global music_Current
@@ -35,10 +157,6 @@ def play_music(song):
 
 def play_sfx(sound):
     pygame.mixer.Sound.play(pygame.mixer.Sound(resource_path(sound)))
-
-font_path = resource_path("GresickMetal-51LXV.otf")
-
-font = pygame.font.Font(font_path, 32)
 
 def draw_text(surface, text, color, font_size, x, y):
     if text.isdigit():
@@ -86,7 +204,7 @@ def get_input():
         draw_text(win, text, (30, 30, 30), 32, width // 2, height // 3)
 
         cursor_timer += 1
-        if cursor_timer % 1000 == 0:  # Adjust this value to control blink speed
+        if cursor_timer % 1000 == 0: 
             cursor_blink = not cursor_blink
 
         if cursor_blink:
@@ -291,127 +409,6 @@ def title_screen_display():
                     difficulty = 3
                 return
 
-# Set up the display
-displayInfo = pygame.display.Info()
-width, height = displayInfo.current_w, displayInfo.current_h
-win = pygame.display.set_mode((width, height))
-pygame.display.set_caption("Child In Traffic")
-
-class Player:
-    def __init__(self, x, y, radius, color):
-        self.x = x
-        self.y = y
-        self.radius = radius
-        self.color = color
-        self.speed = 5
-
-    def draw(self, win):
-        pygame.draw.circle(win, self.color, (self.x, self.y), self.radius)
-
-    def collide_with(self, rect):
-        closest_x = max(rect.x, min(self.x, rect.x + rect.width))
-        closest_y = max(rect.y, min(self.y, rect.y + rect.height))
-        dist_x = self.x - closest_x
-        dist_y = self.y - closest_y
-        distance = math.sqrt((dist_x * dist_x) + (dist_y * dist_y))
-        return distance < self.radius
-
-class Rectangle:
-    def __init__(self, x, y, width, height, color, speed):
-        self.x = x
-        self.y = y
-        self.width = width
-        self.height = height
-        self.color = color
-        self.speed = speed
-
-    def draw(self, win):
-        pygame.draw.rect(win, self.color, (self.x, self.y, self.width, self.height))
-
-    def update(self):
-        self.y += self.speed
-
-    def is_off_screen(self):
-        return self.y > height
-
-backstories = [
-    # Sensible Stories
-    "Somewhere, the child heard the GigaChad song before he was cruched",
-    "The child was chasing a runaway ball when a car suddenly appeared.",
-    "The child was riding a bike and lost control, veering into the busy road.",
-    "In a rush to get home for dinner, the child didn't notice the speeding car.",
-    "The child was helping an elderly person cross the street when tragedy struck.",
-    "Distracted by their phone, the child wandered into the traffic without realizing.",
-    "Trying to catch the school bus, the child dashed across the street without looking.",
-    "The child was playing a game with friends and didn't notice the traffic signal change.",
-    "After a long day at school, the child was distracted and didn't see the oncoming traffic.",
-    "Believing they were in a video game, the child attempted to 'respawn' by getting hit by a car.",
-    "Dressed as a ninja, the child tried to perform an epic street-crossing stunt and failed miserably.",
-    "Chasing after a runaway kite, the child didn't notice the massive eighteen-wheeler bearing down on them.",
-    "In an attempt to impress their friends, the child tried to jump over a moving car and didn't quite make it.",
-    "Trying to catch a falling star, the child ran into the street and met their end under the wheels of a truck.",
-    "The child thought they saw a unicorn on the other side of the street and darted across without checking for cars.",
-    "Lured by the sweet smell of ice cream from the truck, the child ran into the road, only to be flattened by a car.",
-    "The child, convinced they had super speed, dashed across the road to prove it, only to be painfully proven wrong.", 
-    "During an intense game of tag, the child zigged when they should have zagged, right into the path of a speeding car.",
-    "A child was crossing the highway, when a HUGE caravan of trucks came zooming at him. The child was never seen again.",
-    "The child, pretending to be a superhero, decided to stop traffic with their 'super strength' and got splatted instead.",
-    "As the innocent little child crossed the street, the driver of the car was too busy watching anime to notice the child.",
-    "The Child did not want to live anymore. After contemplating his life,\n he decided to end it in the best way possible, death by car.",
-    # Quirky Stories
-    "Well, he gone",
-    "Thats what you get for not looking both ways before crossing the street.",
-    "My brother was hit by a car once. He's fine now, but he's a little... flat-brained.",
-    # Minor "Humor" Stories
-    "L",
-    "F",
-    "Rest in Peperonis",
-    "Uh oh!\n Stinky!",
-    # COMPLETE BRAINROT REMOVE IF ADULTS PLAY PLEASE!!!!!
-    "YA BOI WAS HIT BY A BIG ASS TRUCK.",
-    "Oh, they're gonna have to glue you back together... IN HELL!",
-    "BEEP BEEP MO- (The driver's lawyer advised him not to finish this sentence)",
-    "Bro thought he was in GTAVI and tried to steal a car. He got hit by a car instead.",
-    "The van with free candy didn't have free candy... nor black men... nor furries... nor drug addicts..."
-    "The little shit got yeeted into the shadow realm by some\n booze-cranked driver in his skyscraper-like pimped-up diesel 48ft Uhaul.",
-    "The child was wearing a fursuit. Someone apperently called the SWAT on them,\n and \"it\" got splattered in front of a cheering crowd. The end.",
-    "YOU FAT BALD BASTARD YOU PIECE OF SUBHUMAN TRASH 2000 YEARS OF CONSTANT EVOLUTION TO CREATE\n A HAIRLESS FUCKING COCONUT MY GOD WHAT IS WRONG WITH YOU???",
-    "Are ya listening? Okay. Grass grows, birds, fly, sun shines, and brudda?\n I HURT PEOPLE! Im a force of nature. If you were from, where I was from, you'd be from, where I was from. You'd be ded."
-]
-
-player = Player(width// 2, height // 2, 20, (200, 200, 200))
-rectangles = []
-gap_size = 100
-ramp_up = 1
-point_increase_timer = 0
-
-sfx_Death = "audio/sfx_splat.mp3"
-music_MainMenu = "audio/music_mariokartwii.mp3"
-music_Game = "audio/music_metal-dark-matter-111451.mp3"
-music_GameOver = "audio/music_lose.mp3"
-music_Current = ""
-
-last_rect_creation_time = pygame.time.get_ticks()
-rect_creation_interval = random.randint(2000, 3000)  # 2-3 seconds in milliseconds
-min_rect_creation_interval = 200  # Minimum creation interval
-
-# Detects if x or y values have changed, and uses to set up normalised movement vectors
-x_axis_changed = 0
-y_axis_changed = 0
-
-player_score = 0
-difficulty = 0
-is_paused = False
-title_screen = True
-running = True
-game_over = False
-score_saved = False
-
-selected_backstory = ""
-
-car_counter = 0
-cars_per_spawn = 1
-
 def main_game_loop():
     global running, game_over, is_paused, player_name, player_score, score_saved, selected_backstory, car_counter, ramp_up, rect_creation_interval, last_rect_creation_time, rectangles, point_increase_timer
     title_screen_display()
@@ -561,7 +558,7 @@ def main_game_loop():
             for rect in rectangles:
                 rect.draw(win)
 
-            draw_text(win, f"Next Rectangle in: {time_until_next_rect/1000:.1f} seconds", (200, 200, 200), 24, width // 2, 30)
+            draw_text(win, f"Next Car in: {time_until_next_rect/1000:.1f} seconds", (200, 200, 200), 24, width // 2, 30)
             draw_text(win, f"Score: {player_score}", (200, 200, 200), 24, width // 2, 60)
             draw_text(win, f"Cars Spawned: {car_counter}", (200, 200, 200), 24, width // 2, 90)  # Display car counter
 
