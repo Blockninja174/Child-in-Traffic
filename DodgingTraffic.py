@@ -237,7 +237,7 @@ backstories = [
     "A child was crossing the highway, when a HUGE caravan of trucks came zooming at him. The child was never seen again.",
     "The child, pretending to be a superhero, decided to stop traffic with their 'super strength' and got splatted instead.",
     "As the innocent little child crossed the street, the driver of the car was too busy watching anime to notice the child.",
-    "The Child did not want to live anymore. After contemplating his life, he decided to end it in the best way possible, death by car.",
+    "The Child did not want to live anymore. After contemplating his life,\n he decided to end it in the best way possible, death by car.",
     # Quirky Stories
     "Well, he gone",
     "Thats what you get for not looking both ways before crossing the street.",
@@ -246,15 +246,19 @@ backstories = [
     "L",
     "F",
     "Rest in Peperonis",
+    "Uh oh!\n Stinky!",
     # COMPLETE BRAINROT REMOVE IF ADULTS PLAY PLEASE!!!!!
     "YA BOI WAS HIT BY A BIG ASS TRUCK.",
+    "Oh, they're gonna have to glue you back together... IN HELL!",
     "BEEP BEEP MO- (The driver's lawyer advised him not to finish this sentence)",
     "Bro thought he was in GTAVI and tried to steal a car. He got hit by a car instead.",
     "The van with free candy didn't have free candy... nor black men... nor furries... nor drug addicts..."
-    "The little shit got yeeted into the shadow realm by some booze-cranked driver in his skyscraper-like pimped-up diesel 48ft Uhaul.",
-    "The child was wearing a fursuit. Someone apperently called the SWAT on them, and \"it\" got splattered in front of a cheering crowd. The end.",
-    "YOU FAT BALD BASTARD YOU PIECE OF SUBHUMAN TRASH 2000 YEARS OF CONSTANT EVOLUTION TO CREATE A HAIRLESS FUCKING COCONUT MY GOD WHAT IS WRONG WITH YOU???",
+    "The little shit got yeeted into the shadow realm by some\n booze-cranked driver in his skyscraper-like pimped-up diesel 48ft Uhaul.",
+    "The child was wearing a fursuit. Someone apperently called the SWAT on them,\n and \"it\" got splattered in front of a cheering crowd. The end.",
+    "YOU FAT BALD BASTARD YOU PIECE OF SUBHUMAN TRASH 2000 YEARS OF CONSTANT EVOLUTION TO CREATE\n A HAIRLESS FUCKING COCONUT MY GOD WHAT IS WRONG WITH YOU???",
+    "Are ya listening? Okay. Grass grows, birds, fly, sun shines, and brudda?\n I HURT PEOPLE! Im a force of nature. If you were from, where I was from, you'd be from, where I was from. You'd be ded."
 ]
+
 player = Player(width// 2, height // 2, 20, (200, 200, 200))
 rectangles = []
 gap_size = 100
@@ -405,7 +409,9 @@ while running:
                 draw_text(win, f"{i+1}. {name}: {score}", (200, 200, 200), 24, width // 2, height // 2 + 150 + y_offset)
                 y_offset += 30
 
-        draw_text(win, selected_backstory, (200, 200, 200), 24, width // 2, height - 100)
+        backstory_lines = selected_backstory.split('\n')
+        for i, line in enumerate(backstory_lines):
+            draw_text(win, line, (200, 200, 200), 24, width // 2, height - 100 + i * 30)
 
         pygame.display.update()
         for event in pygame.event.get():
