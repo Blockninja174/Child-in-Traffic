@@ -289,13 +289,20 @@ car_counter = 0  # Initialize car counter
 cars_per_spawn = 1
 
 def title_screen_display():
-    global running
+    global running, cars_per_spawn  
     play_music(music_MainMenu)
+    selected_option = 0
+    options = ["Easy", "Medium", "Rush Hour", ""]
+    
     while True:
         win.fill((100, 100, 100))
         draw_text(win, "Child in Traffic (True Story)", (200, 200, 200), 72, width // 2, height // 6)
-        draw_text(win, "Press the Any key or 'A' Button to Play", (200, 200, 200), 72, width // 2, height // 3)
-        draw_text(win, "Press 'Esc' or 'B' Button to Quit", (200, 200, 200), 72, width // 2, height // 2)
+        draw_text(win, "Select Difficulty:", (200, 200, 200), 48, width // 2, height // 3)
+
+        for i, option in enumerate(options):
+            color = (255, 255, 255) if i == selected_option else (200, 200, 200)
+            draw_text(win, option, color, 36, width // 2, height // 2 + i * 40)
+
         pygame.display.update()
 
         for event in pygame.event.get():
@@ -303,21 +310,44 @@ def title_screen_display():
                 pygame.quit()
                 sys.exit()
             elif event.type == pygame.KEYDOWN:
-                if event.key != pygame.K_ESCAPE:
-                    return  # Exit the title screen to start the game
-                elif event.key == pygame.K_ESCAPE:
+                if event.key == pygame.K_ESCAPE:
                     running = False
                     return
-            elif event.type == pygame.JOYBUTTONDOWN:
+                elif event.key == pygame.K_UP:
+                    selected_option = (selected_option - 1) % len(options)
+                elif event.key == pygame.K_DOWN:
+                    selected_option = (selected_option + 1) % len(options)
+                elif event.key == pygame.K_RETURN:
+                    if selected_option == 0:
+                        cars_per_spawn = 1
+                    elif selected_option == 1:
+                        cars_per_spawn = 2
+                    elif selected_option == 2:
+                        cars_per_spawn = 3
+                    elif selected_option == 3:
+                        cars_per_spawn = 15
+                    return
+            elif event.type == pygame.JOYHATMOTION:
                 if joystick:
-                    if joystick.get_button(0):  # A button
-                        return  # Exit the title screen to start the game
-                    elif joystick.get_button(1):  # B button
-                        running = False
-                        return
+                    hat = joystick.get_hat(0)
+                    if hat[1] == 1:
+                        selected_option = (selected_option - 1) % len(options)
+                    elif hat[1] == -1:
+                        selected_option = (selected_option + 1) % len(options)
+            elif event.type == pygame.JOYBUTTONDOWN:
+                if event.button == 0: # A button
+                    if selected_option == 0:
+                        cars_per_spawn = 1
+                    elif selected_option == 1:
+                        cars_per_spawn = 2
+                    elif selected_option == 2:
+                        cars_per_spawn = 3
+                    elif selected_option == 3:
+                        cars_per_spawn = 15
+                    return
 
 def reset_game():
-    global player, rectangles, player_score, game_over, score_saved, last_rect_creation_time, rect_creation_interval, difficulty
+    global player, rectangles, player_score, game_over, score_saved, last_rect_creation_time, rect_creation_interval, difficulty, car_counter
     player = Player(width // 2, height // 2, 20, (200, 200, 200))
     rectangles = []
     player_score = 0
@@ -326,6 +356,8 @@ def reset_game():
     last_rect_creation_time = pygame.time.get_ticks()
     rect_creation_interval = random.randint(2000, 3000)
     difficulty = 1
+    car_counter = 0
+
     title_screen_display()
     get_input()
     play_music(music_Game)
