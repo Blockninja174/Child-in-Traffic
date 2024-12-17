@@ -102,6 +102,8 @@ selected_backstory = ""
 car_counter = 0
 cars_per_spawn = 1
 
+score_increment_period = {0: 60, 1: 30, 2: 10, 3: 6000} # Increase score every x frames
+
 backstories = [
     # Sensible Stories
     "Somewhere, the child heard the GigaChad song before he was cruched",
@@ -412,7 +414,7 @@ def title_screen_display():
                 return
 
 def main_game_loop():
-    global running, game_over, is_paused, player_name, player_score, score_saved, selected_backstory, car_counter, ramp_up, rect_creation_interval, last_rect_creation_time, rectangles, point_increase_timer
+    global running, game_over, is_paused, player_name, player_score, score_saved, selected_backstory, car_counter, ramp_up, rect_creation_interval, last_rect_creation_time, rectangles, point_increase_timer, score_increment_period, difficulty
     title_screen_display()
     player_name = get_input()
     play_music(music_Game)
@@ -440,7 +442,7 @@ def main_game_loop():
                         is_paused = True
 
         if game_over:
-            play_music(music_GameOver)
+            pygame.mixer.music.stop()
             win.fill((100, 100, 100))
             draw_text(win, "Game Over", (200, 200, 200), 100, width // 2, height // 3)
             draw_text(win, "Press any key to play again", (200, 200, 200), 36, width // 2, height // 3 + 40)
@@ -524,10 +526,11 @@ def main_game_loop():
                 cars_per_spawn = 2
             elif difficulty == 2:
                 cars_per_spawn = 3
-            elif difficulty == 3 and player_score < 11:
+            elif difficulty == 3 and player_score < 1:
                 cars_per_spawn = 0
-            elif difficulty == 3 and player_score >= 11:
+            elif difficulty == 3 and player_score >= 1:
                 cars_per_spawn = 50
+
             current_time = pygame.time.get_ticks()
             time_until_next_rect = max(0, int(rect_creation_interval - (current_time - last_rect_creation_time)))
             if current_time - last_rect_creation_time >= rect_creation_interval:
@@ -542,17 +545,22 @@ def main_game_loop():
                     rectangles.append(Rectangle(rect_x, rect_y, rect_width, rect_height, rect_color, rect_speed))
 
                 car_counter += cars_per_spawn
-                ramp_up += 0.1
+                ramp_up += 0.06
                 rect_creation_interval = max(min_rect_creation_interval, rect_creation_interval - 300)
 
-            if point_increase_timer > 60:
+            if point_increase_timer > score_increment_period[difficulty]:
                 player_score += 1
                 point_increase_timer = 0
             else:
                 point_increase_timer += 1
 
-            if player_score >= 200:
-                game_over = True
+            if player_score >= 500 and difficulty != 3:
+                win.fill((100, 100, 100))
+                draw_text(win, "Is this too easy?", (200, 200, 200), 72, width // 2, height // 3)
+                draw_text(win, "Difficulty set to I4-MODE!", (200, 200, 200), 36, width // 2, height // 2)
+                pygame.display.update()
+                pygame.time.wait(3000)  # Wait for 3 seconds
+                difficulty = 3
 
             win.fill((100, 100, 100))
             player.draw(win)
