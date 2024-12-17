@@ -286,6 +286,8 @@ selected_backstory = ""
 
 car_counter = 0  # Initialize car counter
 
+cars_per_spawn = 1
+
 def title_screen_display():
     global running
     play_music(music_MainMenu)
@@ -430,15 +432,16 @@ while running:
 
         if current_time - last_rect_creation_time >= rect_creation_interval:
             last_rect_creation_time = current_time
-            rect_x = random.randint(0, width - 50)
-            rect_y = -50
-            rect_width = 50
-            rect_height = random.randint(50, 150)
-            rect_color = (30, 30, 30)
-            rect_speed = random.randint(5, 10)
-            rectangles.append(Rectangle(rect_x, rect_y, rect_width, rect_height, rect_color, rect_speed))
+            for _ in range(cars_per_spawn):
+                rect_x = random.randint(0, width - 50)
+                rect_y = -50
+                rect_width = 50
+                rect_height = random.randint(50, 150)
+                rect_color = (30, 30, 30)
+                rect_speed = random.randint(5, 10)
+                rectangles.append(Rectangle(rect_x, rect_y, rect_width, rect_height, rect_color, rect_speed))
 
-            car_counter += 1  # Increment car counter
+            car_counter += cars_per_spawn  # Increment car counter by the number of cars spawned
             difficulty += 0.1
             rect_creation_interval = max(min_rect_creation_interval, rect_creation_interval - 300)
 
