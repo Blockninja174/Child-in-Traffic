@@ -172,6 +172,20 @@ def get_input_with_onscreen_keyboard():
                     elif hat[1] == -1:
                         row = min(row + 1, len(keys_layout) - 1)
                         col = min(col, len(keys_layout[row].split()) - 1)
+            elif event.type == pygame.JOYAXISMOTION:
+                if joystick:
+                    if event.axis == 0:
+                        if event.value < -0.5:
+                            col = max(col - 1, 0)
+                        elif event.value > 0.5:
+                            col = min(col + 1, len(keys_layout[row].split()) - 1)
+                    elif event.axis == 1:
+                        if event.value < -0.5:
+                            row = max(row - 1, 0)
+                            col = min(col, len(keys_layout[row].split()) - 1)
+                        elif event.value > 0.5:
+                            row = min(row + 1, len(keys_layout) - 1)
+                            col = min(col, len(keys_layout[row].split()) - 1)
             elif event.type == pygame.JOYBUTTONDOWN:
                 if joystick:
                     if event.button == 0:  # A button
@@ -186,6 +200,8 @@ def get_input_with_onscreen_keyboard():
                             text += key
                     elif event.button == 1:  # B button
                         return text
+                    elif event.button == 2:  
+                        text = text[:-1]  
 
 def get_input_with_keyboard():
     text = ""
@@ -281,6 +297,7 @@ y_axis_changed = 0
 
 player_score = 0
 difficulty = 0
+is_paused = False  # Add pause state
 title_screen = True
 running = True
 game_over = False
@@ -331,6 +348,15 @@ def title_screen_display():
                     elif selected_option == 3:
                         difficulty = 3
                     return
+            elif event.type == pygame.JOYAXISMOTION:
+                if joystick:
+                    if event.axis == 1:
+                        if event.value < -0.5:
+                            selected_option = (selected_option - 1) % len(options)
+                            pygame.time.wait(50)  # Add delay to prevent rapid scrolling
+                        elif event.value > 0.5:
+                            selected_option = (selected_option + 1) % len(options)
+                            pygame.time.wait(50)  # Add delay to prevent rapid scrolling
             elif event.type == pygame.JOYHATMOTION:
                 if joystick:
                     hat = joystick.get_hat(0)
@@ -364,6 +390,58 @@ def reset_game():
     get_input()
     play_music(music_Game)
 
+def pause_menu_display():
+    global is_paused
+    options = ["Resume", "Quit"]
+    selected_option = 0
+    while is_paused:
+        win.fill((50, 50, 50))
+        draw_text(win, "Paused", (200, 200, 200), 72, width // 2, height // 4)
+        for i, option in enumerate(options):
+            color = (255, 255, 255) if i == selected_option else (200, 200, 200)
+            draw_text(win, option, color, 36, width // 2, height // 2 + i * 50)
+        pygame.display.update()
+        
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE or event.key == pygame.K_RETURN:
+                    if selected_option == 0:
+                        is_paused = False
+                    elif selected_option == 1:
+                        pygame.quit()
+                        sys.exit()
+                elif event.key == pygame.K_UP:
+                    selected_option = (selected_option - 1) % len(options)
+                elif event.key == pygame.K_DOWN:
+                    selected_option = (selected_option + 1) % len(options)
+            elif event.type == pygame.JOYBUTTONDOWN:
+                if joystick:
+                    if event.button == 0:  # A button
+                        if selected_option == 0:
+                            is_paused = False
+                        elif selected_option == 1:
+                            pygame.quit()
+                            sys.exit()
+            elif event.type == pygame.JOYAXISMOTION:
+                if joystick:
+                    if event.axis == 1:
+                        if event.value < -0.5:
+                            selected_option = (selected_option - 1) % len(options)
+                            pygame.time.wait(200)  # Add delay to prevent rapid scrolling
+                        elif event.value > 0.5:
+                            selected_option = (selected_option + 1) % len(options)
+                            pygame.time.wait(200)  # Add delay to prevent rapid scrolling
+            elif event.type == pygame.JOYHATMOTION:
+                if joystick:
+                    hat = joystick.get_hat(0)
+                    if hat[1] == 1:
+                        selected_option = (selected_option - 1) % len(options)
+                    elif hat[1] == -1:
+                        selected_option = (selected_option + 1) % len(options)
+
 # Display the title screen
 play_music(music_MainMenu)
 title_screen_display()
@@ -375,7 +453,7 @@ while running:
             running = False
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
-                game_over = True
+                is_paused = True
         elif event.type == pygame.JOYBUTTONDOWN:
             if joystick:
                 if event.button == 0:  # A button
@@ -383,6 +461,13 @@ while running:
                         running = False
                 elif event.button == 1:  # B button
                     game_over = True
+        if not game_over and not is_paused:
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    is_paused = True
+            elif event.type == pygame.JOYBUTTONDOWN:
+                if joystick and event.button in [2, 3]:
+                    is_paused = True
     if game_over:
         play_music(music_GameOver)
         win.fill((100, 100, 100))
@@ -419,12 +504,13 @@ while running:
                 else:
                     reset_game()
             elif event.type == pygame.JOYBUTTONDOWN:
-                if joystick:
                     if event.button == 1:  # B button
                         running = False
                     else:
                         reset_game()
 
+    elif is_paused:
+        pause_menu_display()
     else:
         keys = pygame.key.get_pressed()
 
