@@ -1,0 +1,27 @@
+name: Generate Platform Files
+
+on: 
+  push:
+    branches:
+      - main
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Generate platform-specific files
+        run: |
+          cp DodgingTraffix.py "Linux Version"
+          echo "##LINUX" | cat - main_linux.py > temp && mv temp main_linux.py
+
+      - name: Commit and push generated files
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add main_linux.py
+          git commit -m "Auto-generate platform-specific files"
+          git push
