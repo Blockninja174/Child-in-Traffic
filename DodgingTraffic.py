@@ -284,6 +284,8 @@ score_saved = False  # Flag to ensure score is saved only once
 
 selected_backstory = ""
 
+car_counter = 0  # Initialize car counter
+
 def title_screen_display():
     global running
     play_music(music_MainMenu)
@@ -436,6 +438,7 @@ while running:
             rect_speed = random.randint(5, 10)
             rectangles.append(Rectangle(rect_x, rect_y, rect_width, rect_height, rect_color, rect_speed))
 
+            car_counter += 1  # Increment car counter
             difficulty += 0.1
             rect_creation_interval = max(min_rect_creation_interval, rect_creation_interval - 300)
 
@@ -456,6 +459,7 @@ while running:
 
         draw_text(win, f"Next Rectangle in: {time_until_next_rect/1000:.1f} seconds", (200, 200, 200), 24, width // 2, 30)
         draw_text(win, f"Score: {player_score}", (200, 200, 200), 24, width // 2, 60)
+        draw_text(win, f"Cars Spawned: {car_counter}", (200, 200, 200), 24, width // 2, 90)  # Display car counter
 
         pygame.display.update()
         clock.tick(60)
