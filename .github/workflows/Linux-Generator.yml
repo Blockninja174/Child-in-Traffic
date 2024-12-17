@@ -16,7 +16,7 @@ jobs:
       - name: Generate platform-specific files
         run: |
           cp DodgingTraffic.py "Linux Version"
-          echo "#!/usr/bin/env python3" | cat - main_linux.py > temp && mv temp main_linux.py
+          echo "#!/usr/bin/env python3" | cat - "Linux Version" > temp && mv temp "Linux Version"
 
       - name: Commit and push generated files
         run: |
