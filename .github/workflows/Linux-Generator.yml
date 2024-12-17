@@ -23,5 +23,10 @@ jobs:
           git config user.name "github-actions"
           git config user.email "actions@github.com"
           git add "Linux Version"
-          git commit -m "Auto-generate platform-specific files"
-          git push
+          git commit -m "Auto-generate platform-specific files" || echo "No changes to commit"
+
+      - name: Pull latest changes
+        run: git pull --rebase origin main
+
+      - name: Push changes
+        run: git push
