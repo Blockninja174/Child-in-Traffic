@@ -73,6 +73,7 @@ class Rectangle:
 player = Player(width// 2, height // 2, 20, (200, 200, 200))
 rectangles = []
 gap_size = 100
+
 ramp_up = 1
 point_increase_timer = 0
 
