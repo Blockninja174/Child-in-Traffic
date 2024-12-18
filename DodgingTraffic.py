@@ -87,7 +87,6 @@ min_rect_creation_interval = 200
 
 x_axis_changed = 0
 y_axis_changed = 0
-
 player_score = 0
 difficulty = 0
 is_paused = False
@@ -101,7 +100,7 @@ selected_backstory = ""
 car_counter = 0
 cars_per_spawn = 1
 
-score_increment_period = {0: 60, 1: 30, 2: 10, 3: 2000} # Increase score every x frames
+score_increment_period = {0: 60, 1: 30, 2: 10, 3: 30} # Increase score every x frames
 
 backstories = [
     # Sensible Stories
@@ -525,9 +524,10 @@ def main_game_loop():
                 cars_per_spawn = 2
             elif difficulty == 2:
                 cars_per_spawn = 3
-            elif difficulty == 3 and player_score < 1:
+            elif difficulty == 3 and player_score < 21:
+                ramp_up +=1
                 cars_per_spawn = 0
-            elif difficulty == 3 and player_score >= 1:
+            elif difficulty == 3 and player_score >= 21:
                 cars_per_spawn = 50
 
             current_time = pygame.time.get_ticks()
