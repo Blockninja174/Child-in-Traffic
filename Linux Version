@@ -127,19 +127,24 @@ backstories = [
     "A child was crossing the highway, when a HUGE caravan of trucks came zooming at him. The child was never seen again.",
     "The child, pretending to be a superhero, decided to stop traffic with their 'super strength' and got splatted instead.",
     "As the innocent little child crossed the street, the driver of the car was too busy watching anime to notice the child.",
+    "There is the possibility that your parents (if exising) might win the lawsuit, \n but I doubt that driver will share the dash-cam",
     "The Child did not want to live anymore. After contemplating his life,\n he decided to end it in the best way possible, death by car.",
     # Quirky Stories
     "Well, he gone",
+    "Nooo, my boy. Anyways...",
+    "You are DEAD, not big surprise.",
     "Thats what you get for not looking both ways before crossing the street.",
     "My brother was hit by a car once. He's fine now, but he's a little... flat-brained.",
     # Minor "Humor" Stories
     "L",
     "F",
+    "...",
     "Rest in Peperonis",
     "Uh oh!\n Stinky!",
     # COMPLETE BRAINROT REMOVE IF ADULTS PLAY PLEASE!!!!!
     "YA BOI WAS HIT BY A BIG ASS TRUCK.",
     "Oh, they're gonna have to glue you back together... IN HELL!",
+    "transgender?, more like, trans-plowed into a STEAMING HOT PILE OF TRASH!"
     "BEEP BEEP MO- (The driver's lawyer advised him not to finish this sentence)",
     "Bro thought he was in GTAVI and tried to steal a car. He got hit by a car instead.",
     "The van with free candy didn't have free candy... nor black men... nor furries... nor drug addicts...",
@@ -163,13 +168,25 @@ def play_sfx(sound):
     pygame.mixer.Sound.play(pygame.mixer.Sound(resource_path(sound)))
 
 def draw_text(surface, text, color, font_size, x, y):
-    if text.isdigit():
-        default_font = pygame.font.Font(None, font_size)
-        text_surface = default_font.render(text, True, color)
-    else:
-        text_surface = font.render(text, True, color)
-    text_rect = text_surface.get_rect(midtop=(x, y))
-    surface.blit(text_surface, text_rect)
+    color_map = {
+        "[red]": (255, 0, 0),
+        "[blue]": (0, 0, 255),
+        # Add more colors if needed
+    }
+    default_color = (30, 30, 30)
+    words = text.split()
+    current_color = color
+
+    total_width = sum(font.size(word + " ")[0] for word in words if word not in color_map)
+    current_x = x - total_width // 2
+
+    for word in words:
+        if word in color_map:
+            current_color = color_map[word]
+        else:
+            text_surface = font.render(word + " ", True, current_color)
+            surface.blit(text_surface, (current_x, y))
+            current_x += text_surface.get_width()
 
 def save_score(player_name, score):
     if score > 9:
@@ -464,6 +481,7 @@ def main_game_loop():
                     draw_text(win, f"{i+1}. {name}: {score}", (200, 200, 200), 24, width // 2, height // 2 + 150 + y_offset)
                     y_offset += 30
 
+            # Display only one backstory, split by \n
             backstory_lines = selected_backstory.split('\n')
             for i, line in enumerate(backstory_lines):
                 draw_text(win, line, (200, 200, 200), 24, width // 2, height - 100 + i * 30)
