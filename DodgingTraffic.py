@@ -139,6 +139,7 @@ backstories = [
     "...",
     "Rest in Peperonis",
     "Uh oh!\n Stinky!",
+    "Would you consider 'cracked' as in the child's skull, or as in the driver is doing some HEAVY weed?",
     # COMPLETE BRAINROT REMOVE IF ADULTS PLAY PLEASE!!!!!
     "YA BOI WAS HIT BY A BIG ASS TRUCK.",
     "Oh, they're gonna have to glue you back together... IN HELL!",
@@ -150,7 +151,11 @@ backstories = [
     "The child was wearing a fursuit. Someone apperently called the SWAT on them,\n and \"it\" got splattered in front of a cheering crowd. The end.",
     "YOU FAT BALD BASTARD YOU PIECE OF SUBHUMAN TRASH 2000 YEARS OF CONSTANT EVOLUTION TO CREATE\n A HAIRLESS FUCKING COCONUT MY GOD WHAT IS WRONG WITH YOU???",
     "Are ya listening? Okay. Grass grows, birds, fly, sun shines, and brudda?\n I HURT PEOPLE! Im a force of nature. If you were from, where I was from, you'd be from, where I was from. You'd be ded."
+    # LORE DROPS
+    "[purple] parallel universes, are they real?"
+    "INSERT LORE HERE" # do so me (matt)
 ]
+
 
 def play_music(song):
     global music_Current
@@ -169,6 +174,12 @@ def draw_text(surface, text, color, font_size, x, y):
     color_map = {
         "[red]": (255, 0, 0),
         "[blue]": (0, 0, 255),
+        "[green]": (0, 255, 0),
+        "[yellow]": (255, 255, 0),
+        "[purple]": (128, 0, 128),
+        "[orange]": (255, 165, 0),
+        "[pink]": (255, 192, 203),
+        "[black]": (0, 0, 0),
         # Add more colors if needed
     }
     default_color = (30, 30, 30)
