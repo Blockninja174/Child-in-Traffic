@@ -73,7 +73,6 @@ class Rectangle:
 player = Player(width// 2, height // 2, 20, (200, 200, 200))
 rectangles = []
 gap_size = 100
-
 ramp_up = 1
 point_increase_timer = 0
 
@@ -89,6 +88,7 @@ min_rect_creation_interval = 200
 
 x_axis_changed = 0
 y_axis_changed = 0
+
 player_score = 0
 difficulty = 0
 is_paused = False
@@ -102,7 +102,7 @@ selected_backstory = ""
 car_counter = 0
 cars_per_spawn = 1
 
-score_increment_period = {0: 60, 1: 30, 2: 10, 3: 30} # Increase score every x frames
+score_increment_period = {0: 60, 1: 30, 2: 10, 3: 690} # Increase score every x frames
 
 backstories = [
     # Sensible Stories
@@ -127,25 +127,19 @@ backstories = [
     "A child was crossing the highway, when a HUGE caravan of trucks came zooming at him. The child was never seen again.",
     "The child, pretending to be a superhero, decided to stop traffic with their 'super strength' and got splatted instead.",
     "As the innocent little child crossed the street, the driver of the car was too busy watching anime to notice the child.",
-    "There is the possibility that your parents (if exising) might win the lawsuit, \n but I doubt that driver will share the dash-cam",
     "The Child did not want to live anymore. After contemplating his life,\n he decided to end it in the best way possible, death by car.",
     # Quirky Stories
     "Well, he gone",
-    "Nooo, my boy. Anyways...",
-    "You are DEAD, not big surprise.",
     "Thats what you get for not looking both ways before crossing the street.",
     "My brother was hit by a car once. He's fine now, but he's a little... flat-brained.",
     # Minor "Humor" Stories
     "L",
     "F",
-    "...",
     "Rest in Peperonis",
     "Uh oh!\n Stinky!",
-    "Would you consider 'cracked' as in the child's skull, or as in the driver is doing some HEAVY weed?",
     # COMPLETE BRAINROT REMOVE IF ADULTS PLAY PLEASE!!!!!
     "YA BOI WAS HIT BY A BIG ASS TRUCK.",
     "Oh, they're gonna have to glue you back together... IN HELL!",
-    "transgender?, more like, trans-plowed into a STEAMING HOT PILE OF TRASH!"
     "BEEP BEEP MO- (The driver's lawyer advised him not to finish this sentence)",
     "Bro thought he was in GTAVI and tried to steal a car. He got hit by a car instead.",
     "The van with free candy didn't have free candy... nor black men... nor furries... nor drug addicts...",
@@ -153,11 +147,7 @@ backstories = [
     "The child was wearing a fursuit. Someone apperently called the SWAT on them,\n and \"it\" got splattered in front of a cheering crowd. The end.",
     "YOU FAT BALD BASTARD YOU PIECE OF SUBHUMAN TRASH 2000 YEARS OF CONSTANT EVOLUTION TO CREATE\n A HAIRLESS FUCKING COCONUT MY GOD WHAT IS WRONG WITH YOU???",
     "Are ya listening? Okay. Grass grows, birds, fly, sun shines, and brudda?\n I HURT PEOPLE! Im a force of nature. If you were from, where I was from, you'd be from, where I was from. You'd be ded."
-    # LORE DROPS
-    "[purple] parallel universes, are they real?"
-    "INSERT LORE HERE" # do so me (matt)
 ]
-
 
 def play_music(song):
     global music_Current
@@ -173,31 +163,13 @@ def play_sfx(sound):
     pygame.mixer.Sound.play(pygame.mixer.Sound(resource_path(sound)))
 
 def draw_text(surface, text, color, font_size, x, y):
-    color_map = {
-        "[red]": (255, 0, 0),
-        "[blue]": (0, 0, 255),
-        "[green]": (0, 255, 0),
-        "[yellow]": (255, 255, 0),
-        "[purple]": (128, 0, 128),
-        "[orange]": (255, 165, 0),
-        "[pink]": (255, 192, 203),
-        "[black]": (0, 0, 0),
-        # Add more colors if needed
-    }
-    default_color = (30, 30, 30)
-    words = text.split()
-    current_color = color
-
-    total_width = sum(font.size(word + " ")[0] for word in words if word not in color_map)
-    current_x = x - total_width // 2
-
-    for word in words:
-        if word in color_map:
-            current_color = color_map[word]
-        else:
-            text_surface = font.render(word + " ", True, current_color)
-            surface.blit(text_surface, (current_x, y))
-            current_x += text_surface.get_width()
+    if text.isdigit():
+        default_font = pygame.font.Font(None, font_size)
+        text_surface = default_font.render(text, True, color)
+    else:
+        text_surface = font.render(text, True, color)
+    text_rect = text_surface.get_rect(midtop=(x, y))
+    surface.blit(text_surface, text_rect)
 
 def save_score(player_name, score):
     if score > 9:
@@ -242,15 +214,15 @@ def get_input():
         if cursor_blink:
             draw_text(win, "|", (30, 30, 30), 32, width // 2 + font.size(text)[0] // 2, height // 3)
 
-        if joystick and pygame.joystick.get_count() > 0:
-            for r, row_keys in enumerate(keys_layout):
-                row_keys_split = row_keys.split()
-                for c, key in enumerate(row_keys_split):
-                    key_x = (width // 2 - (len(row_keys_split) * (key_width + spacing)) // 2) + c * (key_width + spacing)
-                    key_y = (height // 2 + r * (key_height + spacing))
-                    key_rect = pygame.Rect(key_x, key_y, key_width, key_height)
-                    pygame.draw.rect(win, (0, 0, 0) if (r, c) == (row, col) else (255, 255, 255), key_rect)
-                    draw_text(win, key, (0, 0, 0), 32, key_x + key_width // 2, key_y + 10)
+        # Always render the keyboard
+        for r, row_keys in enumerate(keys_layout):
+            row_keys_split = row_keys.split()
+            for c, key in enumerate(row_keys_split):
+                key_x = (width // 2 - (len(row_keys_split) * (key_width + spacing)) // 2) + c * (key_width + spacing)
+                key_y = (height // 2 + r * (key_height + spacing))
+                key_rect = pygame.Rect(key_x, key_y, key_width, key_height)
+                pygame.draw.rect(win, (0, 0, 0) if (r, c) == (row, col) else (255, 255, 255), key_rect)
+                draw_text(win, key, (0, 0, 0), 32, key_x + key_width // 2, key_y + 10)
 
         pygame.display.flip()
 
@@ -263,51 +235,26 @@ def get_input():
                     text = text[:-1]
                 elif event.key == K_RETURN:
                     return text
-                else:
-                    text += event.unicode
-            elif joystick and pygame.joystick.get_count() > 0:
-                if event.type == pygame.JOYHATMOTION:
-                    hat = joystick.get_hat(0)
-                    row_keys_split = keys_layout[row].split()
-                    if hat[0] == 1:
-                        col = min(col + 1, len(row_keys_split) - 1)
-                    elif hat[0] == -1:
-                        col = max(col - 1, 0)
-                    if hat[1] == 1:
-                        row = max(row - 1, 0)
-                        col = min(col, len(keys_layout[row].split()) - 1)
-                    elif hat[1] == -1:
-                        row = min(row + 1, len(keys_layout) - 1)
-                        col = min(col, len(keys_layout[row].split()) - 1)
-                elif event.type == pygame.JOYAXISMOTION:
-                    if event.axis == 0:
-                        if event.value < -0.5:
-                            col = max(col - 1, 0)
-                        elif event.value > 0.5:
-                            col = min(col + 1, len(keys_layout[row].split()) - 1)
-                    elif event.axis == 1:
-                        if event.value < -0.5:
-                            row = max(row - 1, 0)
-                            col = min(col, len(keys_layout[row].split()) - 1)
-                        elif event.value > 0.5:
-                            row = min(row + 1, len(keys_layout) - 1)
-                            col = min(col, len(keys_layout[row].split()) - 1)
-                elif event.type == pygame.JOYBUTTONDOWN:
-                    if event.button == 0:  # A button
-                        key = keys_layout[row].split()[col]
-                        if key == "BACK":
-                            text = text[:-1]
-                        elif key == "SPACE":
-                            text += " "
-                        elif key == "ENTER":
-                            return text
-                        else:
-                            text += key
-                    elif event.button == 1:  # B button
-                        return text
-                    elif event.button == 2:  
+                elif event.key == K_w:  # Move up
+                    row = max(row - 1, 0)
+                    col = min(col, len(keys_layout[row].split()) - 1)
+                elif event.key == K_s:  # Move down
+                    row = min(row + 1, len(keys_layout) - 1)
+                    col = min(col, len(keys_layout[row].split()) - 1)
+                elif event.key == K_a:  # Move left
+                    col = max(col - 1, 0)
+                elif event.key == K_d:  # Move right
+                    col = min(col + 1, len(keys_layout[row].split()) - 1)
+                elif event.key == K_SPACE or event.key == K_c:  # Select key with SPACE or C
+                    key = keys_layout[row].split()[col]
+                    if key == "BACK":
                         text = text[:-1]
-
+                    elif key == "SPACE":
+                        text += " "
+                    elif key == "ENTER":
+                        return text
+                    else:
+                        text += key
 def reset_game():
     global player, rectangles, player_score, game_over, score_saved, last_rect_creation_time, rect_creation_interval, ramp_up, car_counter
     player = Player(width // 2, height // 2, 20, (200, 200, 200))
@@ -492,7 +439,6 @@ def main_game_loop():
                     draw_text(win, f"{i+1}. {name}: {score}", (200, 200, 200), 24, width // 2, height // 2 + 150 + y_offset)
                     y_offset += 30
 
-            # Display only one backstory, split by \n
             backstory_lines = selected_backstory.split('\n')
             for i, line in enumerate(backstory_lines):
                 draw_text(win, line, (200, 200, 200), 24, width // 2, height - 100 + i * 30)
@@ -555,10 +501,9 @@ def main_game_loop():
                 cars_per_spawn = 2
             elif difficulty == 2:
                 cars_per_spawn = 3
-            elif difficulty == 3 and player_score < 21:
-                ramp_up +=1
+            elif difficulty == 3 and player_score < 1:
                 cars_per_spawn = 0
-            elif difficulty == 3 and player_score >= 21:
+            elif difficulty == 3 and player_score >= 1:
                 cars_per_spawn = 50
 
             current_time = pygame.time.get_ticks()
