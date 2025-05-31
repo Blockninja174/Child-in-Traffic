@@ -16,12 +16,20 @@ def resource_path(relative_path):
 pygame.init()
 clock = pygame.time.Clock()
 
-# Initialize the joystick
+# Initialize the joystick(s)
 pygame.joystick.init()
-joystick = None
-if pygame.joystick.get_count() > 0:
-    joystick = pygame.joystick.Joystick(0)
-    joystick.init()
+
+def get_active_joystick():
+    # Return the first available joystick/controller, or None
+    if pygame.joystick.get_count() > 0:
+        for i in range(pygame.joystick.get_count()):
+            js = pygame.joystick.Joystick(i)
+            if not js.get_init():
+                js.init()
+            return js
+    return None
+
+joystick = get_active_joystick()
 
 font_path = resource_path("GresickMetal-51LXV.otf")
 font = pygame.font.Font(font_path, 32)
@@ -240,7 +248,10 @@ def get_input():
         if cursor_blink:
             draw_text(win, "|", (30, 30, 30), 32, width // 2 + font.size(text)[0] // 2, height // 3)
 
-        if joystick and pygame.joystick.get_count() > 0:
+        # Always get the latest joystick (Steam Input may hotplug)
+        js = get_active_joystick()
+
+        if js:
             for r, row_keys in enumerate(keys_layout):
                 row_keys_split = row_keys.split()
                 for c, key in enumerate(row_keys_split):
@@ -263,9 +274,9 @@ def get_input():
                     return text
                 else:
                     text += event.unicode
-            elif joystick and pygame.joystick.get_count() > 0:
+            elif js:
                 if event.type == pygame.JOYHATMOTION:
-                    hat = joystick.get_hat(0)
+                    hat = js.get_hat(0)
                     row_keys_split = keys_layout[row].split()
                     if hat[0] == 1:
                         col = min(col + 1, len(row_keys_split) - 1)
@@ -446,6 +457,7 @@ def main_game_loop():
     play_music(music_Game)
 
     while running:
+        js = get_active_joystick()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -453,7 +465,7 @@ def main_game_loop():
                 if event.key == pygame.K_ESCAPE:
                     is_paused = True
             elif event.type == pygame.JOYBUTTONDOWN:
-                if joystick:
+                if js:
                     if event.button == 0:  # A button
                         if game_over:
                             running = False
@@ -464,7 +476,7 @@ def main_game_loop():
                     if event.key == pygame.K_ESCAPE:
                         is_paused = True
                 elif event.type == pygame.JOYBUTTONDOWN:
-                    if joystick and event.button in [2, 3]:
+                    if js and event.button in [2, 3]:
                         is_paused = True
 
         if game_over:
@@ -528,9 +540,9 @@ def main_game_loop():
             elif keys[pygame.K_DOWN]:
                 player.y += player.speed / (1 + (.4 * x_axis_changed))
 
-            if joystick:
-                axis0 = joystick.get_axis(0)
-                axis1 = joystick.get_axis(1)
+            if js:
+                axis0 = js.get_axis(0)
+                axis1 = js.get_axis(1)
                 player.x += (axis0 * player.speed) / (1 + (.4 * abs(axis1)))
                 player.y += (axis1 * player.speed) / (1 + (.4 * abs(axis0)))
 
