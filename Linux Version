@@ -316,6 +316,10 @@ def get_input():
                             text += key
                     elif event.button == 1:  # B button
                         return text
+                    elif event.button == 2:  # X button -> BACK
+                        text = text[:-1]
+                    elif event.button == 3:  # Y button -> ENTER
+                        return text
                     elif event.button == 2:  
                         text = text[:-1]
 
@@ -472,7 +476,11 @@ def main_game_loop():
                         if game_over:
                             running = False
                     elif event.button == 1:  # B button
-                        game_over = True
+                        # Bring up pause menu instead of game over
+                        if not game_over:
+                            is_paused = True
+                        else:
+                            game_over = True
             if not game_over and not is_paused:
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
@@ -612,7 +620,11 @@ def main_game_loop():
 
             draw_text(win, f"Next Car in: {time_until_next_rect/1000:.1f} seconds", (200, 200, 200), 24, width // 2, 30)
             draw_text(win, f"Score: {player_score}", (200, 200, 200), 24, width // 2, 60)
-            draw_text(win, f"Cars Spawned: {car_counter}", (200, 200, 200), 24, width // 2, 90)  # Display car counter
+
+            # Display difficulty in the top right
+            difficulty_names = ["Easy", "Medium", "Rush Hour", "..."]
+            current_difficulty = difficulty_names[difficulty] if difficulty < len(difficulty_names) else f"Difficulty {difficulty}"
+            draw_text(win, f"{current_difficulty}", (200, 200, 200), 24, width - 180, 10)
 
             pygame.display.update()
             clock.tick(60)
