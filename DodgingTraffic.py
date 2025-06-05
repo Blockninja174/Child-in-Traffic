@@ -16,12 +16,16 @@ def resource_path(relative_path):
 pygame.init()
 clock = pygame.time.Clock()
 
-# Initialize the joystick
+# Initialize the joysticks for two controllers
 pygame.joystick.init()
-joystick = None
+joystick1 = None
+joystick2 = None
 if pygame.joystick.get_count() > 0:
-    joystick = pygame.joystick.Joystick(0)
-    joystick.init()
+    joystick1 = pygame.joystick.Joystick(0)
+    joystick1.init()
+if pygame.joystick.get_count() > 1:
+    joystick2 = pygame.joystick.Joystick(1)
+    joystick2.init()
 
 font_path = resource_path("GresickMetal-51LXV.otf")
 font = pygame.font.Font(font_path, 32)
@@ -251,7 +255,7 @@ def get_input():
         if cursor_blink:
             draw_text(win, "|", (30, 30, 30), MEDIUM_TEXT_SIZE, width // 2 + font.size(text)[0] // 2, height // 3)
 
-        if joystick and pygame.joystick.get_count() > 0:
+        if joystick1 and pygame.joystick.get_count() > 0:
             for r, row_keys in enumerate(keys_layout):
                 row_keys_split = row_keys.split()
                 for c, key in enumerate(row_keys_split):
@@ -274,9 +278,9 @@ def get_input():
                     return text
                 else:
                     text += event.unicode
-            elif joystick and pygame.joystick.get_count() > 0:
+            elif joystick1 and pygame.joystick.get_count() > 0:
                 if event.type == pygame.JOYHATMOTION:
-                    hat = joystick.get_hat(0)
+                    hat = joystick1.get_hat(0)
                     row_keys_split = keys_layout[row].split()
                     if hat[0] == 1:
                         col = min(col + 1, len(row_keys_split) - 1)
@@ -360,7 +364,7 @@ def pause_menu_display():
                 elif event.key == pygame.K_DOWN:
                     selected_option = (selected_option + 1) % len(options)
             elif event.type == pygame.JOYBUTTONDOWN:
-                if joystick:
+                if joystick1:
                     if event.button == 0:  # A button
                         if selected_option == 0:
                             is_paused = False
@@ -368,7 +372,7 @@ def pause_menu_display():
                             pygame.quit()
                             sys.exit()
             elif event.type == pygame.JOYAXISMOTION:
-                if joystick:
+                if joystick1:
                     if event.axis == 1:
                         if event.value < -0.5:
                             selected_option = (selected_option - 1) % len(options)
@@ -377,8 +381,8 @@ def pause_menu_display():
                             selected_option = (selected_option + 1) % len(options)
                             pygame.time.wait(200)  # Add delay to prevent rapid scrolling
             elif event.type == pygame.JOYHATMOTION:
-                if joystick:
-                    hat = joystick.get_hat(0)
+                if joystick1:
+                    hat = joystick1.get_hat(0)
                     if hat[1] == 1:
                         selected_option = (selected_option - 1) % len(options)
                     elif hat[1] == -1:
@@ -466,7 +470,7 @@ def single_player_menu():
                         difficulty = 3
                     return
             elif event.type == pygame.JOYAXISMOTION:
-                if joystick:
+                if joystick1:
                     if event.axis == 1:
                         if event.value < -0.5:
                             selected_option = (selected_option - 1) % len(options)
@@ -475,8 +479,8 @@ def single_player_menu():
                             selected_option = (selected_option + 1) % len(options)
                             pygame.time.wait(50)  
             elif event.type == pygame.JOYHATMOTION:
-                if joystick:
-                    hat = joystick.get_hat(0)
+                if joystick1:
+                    hat = joystick1.get_hat(0)
                     if hat[1] == 1:
                         selected_option = (selected_option - 1) % len(options)
                     elif hat[1] == -1:
@@ -541,7 +545,7 @@ def main_menu():
                     pygame.quit()
                     sys.exit()
             elif event.type == pygame.JOYAXISMOTION:
-                if joystick:
+                if joystick1:
                     if event.axis == 1:
                         if event.value < -0.5:
                             selected_option = (selected_option - 1) % len(options)
@@ -550,8 +554,8 @@ def main_menu():
                             selected_option = (selected_option + 1) % len(options)
                             pygame.time.wait(200)
             elif event.type == pygame.JOYHATMOTION:
-                if joystick:
-                    hat = joystick.get_hat(0)
+                if joystick1:
+                    hat = joystick1.get_hat(0)
                     if hat[1] == 1:
                         selected_option = (selected_option - 1) % len(options)
                     elif hat[1] == -1:
@@ -586,7 +590,7 @@ def multiplayer_menu():
                     difficulty = selected_option
                     return
             elif event.type == pygame.JOYAXISMOTION:
-                if joystick:
+                if joystick1:
                     if event.axis == 1:
                         if event.value < -0.5:
                             selected_option = (selected_option - 1) % len(options)
@@ -595,8 +599,8 @@ def multiplayer_menu():
                             selected_option = (selected_option + 1) % len(options)
                             pygame.time.wait(50)
             elif event.type == pygame.JOYHATMOTION:
-                if joystick:
-                    hat = joystick.get_hat(0)
+                if joystick1:
+                    hat = joystick1.get_hat(0)
                     if hat[1] == 1:
                         selected_option = (selected_option - 1) % len(options)
                     elif hat[1] == -1:
@@ -629,7 +633,7 @@ def multiplayer_game_loop():
                 if event.key == pygame.K_ESCAPE:
                     is_paused = True
             elif event.type == pygame.JOYBUTTONDOWN:
-                if joystick:
+                if joystick1:
                     if event.button == 0:
                         if game_over:
                             running = False
@@ -640,7 +644,7 @@ def multiplayer_game_loop():
                     if event.key == pygame.K_ESCAPE:
                         is_paused = True
                 elif event.type == pygame.JOYBUTTONDOWN:
-                    if joystick and event.button in [2, 3]:
+                    if joystick1 and event.button in [2, 3]:
                         is_paused = True
         if game_over:
             pygame.mixer.music.stop()
@@ -685,7 +689,7 @@ def multiplayer_game_loop():
             pause_menu_display()
         else:
             keys = pygame.key.get_pressed()
-            # Player 1: Arrow keys
+            # Player 1: Arrow keys or joystick1
             x_axis_changed1, y_axis_changed1 = 0, 0
             if keys[pygame.K_DOWN] or keys[pygame.K_UP]:
                 y_axis_changed1 = 1
@@ -699,7 +703,13 @@ def multiplayer_game_loop():
                 player1.y -= player1.speed / (1 + (.4 * x_axis_changed1))
             elif keys[pygame.K_DOWN]:
                 player1.y += player1.speed / (1 + (.4 * x_axis_changed1))
-            # Player 2: WASD
+            # Joystick 1 (controller 1, player 1)
+            if joystick1:
+                axis0 = joystick1.get_axis(0)
+                axis1 = joystick1.get_axis(1)
+                player1.x += (axis0 * player1.speed) / (1 + (.4 * abs(axis1)))
+                player1.y += (axis1 * player1.speed) / (1 + (.4 * abs(axis0)))
+            # Player 2: WASD or joystick2
             x_axis_changed2, y_axis_changed2 = 0, 0
             if keys[pygame.K_s] or keys[pygame.K_w]:
                 y_axis_changed2 = 1
@@ -713,10 +723,10 @@ def multiplayer_game_loop():
                 player2.y -= player2.speed / (1 + (.4 * x_axis_changed2))
             elif keys[pygame.K_s]:
                 player2.y += player2.speed / (1 + (.4 * x_axis_changed2))
-            # Joystick (optional, controls player2)
-            if joystick:
-                axis0 = joystick.get_axis(0)
-                axis1 = joystick.get_axis(1)
+            # Joystick 2 (controller 2, player 2)
+            if joystick2:
+                axis0 = joystick2.get_axis(0)
+                axis1 = joystick2.get_axis(1)
                 player2.x += (axis0 * player2.speed) / (1 + (.4 * abs(axis1)))
                 player2.y += (axis1 * player2.speed) / (1 + (.4 * abs(axis0)))
             # Clamp player positions
@@ -820,7 +830,7 @@ def main_game_loop():
                         if event.key == pygame.K_ESCAPE:
                             is_paused = True
                     elif event.type == pygame.JOYBUTTONDOWN:
-                        if joystick:
+                        if joystick1:
                             if event.button == 0:
                                 if game_over:
                                     running = False
@@ -866,12 +876,12 @@ def main_game_loop():
                 else:
                     keys = pygame.key.get_pressed()
 
+                    # Keyboard movement
                     x_axis_changed, y_axis_changed = 0, 0
                     if keys[pygame.K_DOWN] or keys[pygame.K_UP]:
                         y_axis_changed = 1
                     if keys[pygame.K_LEFT] or keys[pygame.K_RIGHT]:
                         x_axis_changed = 1
-
                     if keys[pygame.K_LEFT]:
                         player.x -= player.speed / (1 + (.4 * y_axis_changed))
                     elif keys[pygame.K_RIGHT]:
@@ -880,10 +890,10 @@ def main_game_loop():
                         player.y -= player.speed / (1 + (.4 * x_axis_changed))
                     elif keys[pygame.K_DOWN]:
                         player.y += player.speed / (1 + (.4 * x_axis_changed))
-
-                    if joystick:
-                        axis0 = joystick.get_axis(0)
-                        axis1 = joystick.get_axis(1)
+                    # Joystick 1 (controller 1, player 1)
+                    if joystick1:
+                        axis0 = joystick1.get_axis(0)
+                        axis1 = joystick1.get_axis(1)
                         player.x += (axis0 * player.speed) / (1 + (.4 * abs(axis1)))
                         player.y += (axis1 * player.speed) / (1 + (.4 * abs(axis0)))
 
