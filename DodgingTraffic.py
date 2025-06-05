@@ -467,7 +467,7 @@ def single_player_menu():
                         difficulty = 3
                     return
             elif event.type == pygame.JOYAXISMOTION:
-                if (joystick1 and event.joy == joystick1.get_id()) or (joystick2 and event.joy == joystick2.get_id()):
+                if joystick2 and event.joy == joystick2.get_id():
                     if event.axis == 1:
                         if event.value < -0.5:
                             selected_option = (selected_option - 1) % len(options)
@@ -476,14 +476,17 @@ def single_player_menu():
                             selected_option = (selected_option + 1) % len(options)
                             pygame.time.wait(50)
             elif event.type == pygame.JOYHATMOTION:
-                if (joystick1 and event.joy == joystick1.get_id()) or (joystick2 and event.joy == joystick2.get_id()):
-                    hat = (joystick1 if event.joy == joystick1.get_id() else joystick2).get_hat(0)
+                if joystick2 and event.joy == joystick2.get_id():
+                    hat = joystick2.get_hat(0)
                     if hat[1] == 1:
                         selected_option = (selected_option - 1) % len(options)
                     elif hat[1] == -1:
                         selected_option = (selected_option + 1) % len(options)
             elif event.type == pygame.JOYBUTTONDOWN:
-                if (joystick1 and event.joy == joystick1.get_id()) or (joystick2 and event.joy == joystick2.get_id()):
+                if (joystick1 and event.joy == joystick1.get_id() and event.button == 1) or (joystick2 and event.joy == joystick2.get_id() and event.button == 1):
+                    # B button on either controller goes back
+                    return
+                if joystick2 and event.joy == joystick2.get_id() and event.button == 0:
                     if selected_option == 0:
                         difficulty = 0
                     elif selected_option == 1:
