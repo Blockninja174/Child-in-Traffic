@@ -112,6 +112,7 @@ score_increment_period = {0: 60, 1: 30, 2: 10, 3: 30} # Increase score every x f
 
 backstories = [
     # Sensible Stories
+    "Once upon a time The End *roll credits*",
     "Somewhere, the child heard the GigaChad song before he was cruched",
     "The child was chasing a runaway ball when a car suddenly appeared.",
     "The child was riding a bike and lost control, veering into the busy road.",
@@ -164,6 +165,7 @@ backstories = [
     "INSERT LORE HERE" # do so me (matt)
 ]
 
+# Task Functions
 
 def play_music(song):
     global music_Current
@@ -228,165 +230,7 @@ def load_scores():
                 scores[name] = score
     return scores
 
-def get_input():
-    keys_layout = [
-        "1 2 3 4 5 6 7 8 9 0",
-        "Q W E R T Y U I O P",
-        "A S D F G H J K L",
-        "Z X C V B N M",
-        "BACK SPACE ENTER"
-    ]
-    text = ""
-    row, col = 0, 0
-    key_width, key_height = 60, 60
-    spacing = 10
-    cursor_blink = True
-    cursor_timer = 0
-
-    while True:
-        win.fill((200, 200, 200))
-        draw_text(win, "Enter your name:", (30, 30, 30), MEDIUM_TEXT_SIZE, width // 2, height // 6)
-        draw_text(win, text, (30, 30, 30), MEDIUM_TEXT_SIZE, width // 2, height // 3)
-
-        cursor_timer += 1
-        if cursor_timer % 1000 == 0: 
-            cursor_blink = not cursor_blink
-
-        if cursor_blink:
-            draw_text(win, "|", (30, 30, 30), MEDIUM_TEXT_SIZE, width // 2 + font.size(text)[0] // 2, height // 3)
-
-        if joystick1 and pygame.joystick.get_count() > 0:
-            for r, row_keys in enumerate(keys_layout):
-                row_keys_split = row_keys.split()
-                for c, key in enumerate(row_keys_split):
-                    key_x = (width // 2 - (len(row_keys_split) * (key_width + spacing)) // 2) + c * (key_width + spacing)
-                    key_y = (height // 2 + r * (key_height + spacing))
-                    key_rect = pygame.Rect(key_x, key_y, key_width, key_height)
-                    pygame.draw.rect(win, (0, 0, 0) if (r, c) == (row, col) else (255, 255, 255), key_rect)
-                    draw_text(win, key, (0, 0, 0), MEDIUM_TEXT_SIZE, key_x + key_width // 2, key_y + 10)
-
-        pygame.display.flip()
-
-        for event in pygame.event.get():
-            if event.type == QUIT:
-                pygame.quit()
-                sys.exit()
-            elif event.type == KEYDOWN:
-                if event.key == K_BACKSPACE:
-                    text = text[:-1]
-                elif event.key == K_RETURN:
-                    return text
-                else:
-                    text += event.unicode
-            elif joystick1 and pygame.joystick.get_count() > 0:
-                if event.type == pygame.JOYHATMOTION:
-                    hat = joystick1.get_hat(0)
-                    row_keys_split = keys_layout[row].split()
-                    if hat[0] == 1:
-                        col = min(col + 1, len(row_keys_split) - 1)
-                    elif hat[0] == -1:
-                        col = max(col - 1, 0)
-                    if hat[1] == 1:
-                        row = max(row - 1, 0)
-                        col = min(col, len(keys_layout[row].split()) - 1)
-                    elif hat[1] == -1:
-                        row = min(row + 1, len(keys_layout) - 1)
-                        col = min(col, len(keys_layout[row].split()) - 1)
-                elif event.type == pygame.JOYAXISMOTION:
-                    if event.axis == 0:
-                        if event.value < -0.5:
-                            col = max(col - 1, 0)
-                        elif event.value > 0.5:
-                            col = min(col + 1, len(keys_layout[row].split()) - 1)
-                    elif event.axis == 1:
-                        if event.value < -0.5:
-                            row = max(row - 1, 0)
-                            col = min(col, len(keys_layout[row].split()) - 1)
-                        elif event.value > 0.5:
-                            row = min(row + 1, len(keys_layout) - 1)
-                            col = min(col, len(keys_layout[row].split()) - 1)
-                elif event.type == pygame.JOYBUTTONDOWN:
-                    if event.button == 0:  # A button
-                        key = keys_layout[row].split()[col]
-                        if key == "BACK":
-                            text = text[:-1]
-                        elif key == "SPACE":
-                            text += " "
-                        elif key == "ENTER":
-                            return text
-                        else:
-                            text += key
-                    elif event.button == 1:  # B button
-                        return text
-                    elif event.button == 2:  
-                        text = text[:-1]
-
-def reset_game():
-    global player, rectangles, player_score, game_over, score_saved, last_rect_creation_time, rect_creation_interval, ramp_up, car_counter
-    player = Player(width // 2, height // 2, 20, (200, 200, 200))
-    rectangles = []
-    player_score = 0
-    game_over = False
-    score_saved = False
-    last_rect_creation_time = pygame.time.get_ticks()
-    rect_creation_interval = random.randint(2000, 3000)
-    ramp_up = 1
-    car_counter = 0
-    single_player_menu()
-    get_input()
-    play_music(music_Game)
-
-def pause_menu_display():
-    global is_paused
-    options = ["Resume", "Quit"]
-    selected_option = 0
-    while is_paused:
-        win.fill((50, 50, 50))
-        draw_text(win, "Paused", (200, 200, 200), LARGE_TEXT_SIZE, width // 2, height // 4)
-        for i, option in enumerate(options):
-            color = (255, 255, 255) if i == selected_option else (200, 200, 200)
-            draw_text(win, option, color, MEDIUM_TEXT_SIZE, width // 2, height // 2 + i * (MEDIUM_TEXT_SIZE + 10))
-        pygame.display.update()
-        
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE or event.key == pygame.K_RETURN:
-                    if selected_option == 0:
-                        is_paused = False
-                    elif selected_option == 1:
-                        pygame.quit()
-                        sys.exit()
-                elif event.key == pygame.K_UP:
-                    selected_option = (selected_option - 1) % len(options)
-                elif event.key == pygame.K_DOWN:
-                    selected_option = (selected_option + 1) % len(options)
-            elif event.type == pygame.JOYBUTTONDOWN:
-                if joystick1:
-                    if event.button == 0:  # A button
-                        if selected_option == 0:
-                            is_paused = False
-                        elif selected_option == 1:
-                            pygame.quit()
-                            sys.exit()
-            elif event.type == pygame.JOYAXISMOTION:
-                if joystick1:
-                    if event.axis == 1:
-                        if event.value < -0.5:
-                            selected_option = (selected_option - 1) % len(options)
-                            pygame.time.wait(200)  # Add delay to prevent rapid scrolling
-                        elif event.value > 0.5:
-                            selected_option = (selected_option + 1) % len(options)
-                            pygame.time.wait(200)  # Add delay to prevent rapid scrolling
-            elif event.type == pygame.JOYHATMOTION:
-                if joystick1:
-                    hat = joystick1.get_hat(0)
-                    if hat[1] == 1:
-                        selected_option = (selected_option - 1) % len(options)
-                    elif hat[1] == -1:
-                        selected_option = (selected_option + 1) % len(options)
+# Scene Functions
 
 def intro_sequence():
     fade_duration = 2500
@@ -430,6 +274,75 @@ def intro_sequence():
     win.fill((100, 100, 100))
     pygame.display.update()
 
+def main_menu():
+    global running
+    play_music(music_MainMenu)
+    selected_option = 0
+    options = ["Single Player", "Multiplayer", "Credits", "Quit"]
+    while running:
+        win.fill((100, 100, 100))
+        draw_text(win, "Child in Traffic", (200, 200, 200), LARGE_TEXT_SIZE, width // 2, height // 6)
+        draw_text(win, "Choose a Mode", (200, 200, 200), MEDIUM_TEXT_SIZE, width // 2, height // 3)
+        for i, option in enumerate(options):
+            color = (255, 255, 255) if i == selected_option else (200, 200, 200)
+            draw_text(win, option, color, MEDIUM_TEXT_SIZE, width // 2, height // 2 + i * (MEDIUM_TEXT_SIZE + 10))
+        pygame.display.update()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    # Quit from main menu
+                    running = False
+                    return None
+                elif event.key == pygame.K_UP:
+                    selected_option = (selected_option - 1) % len(options)
+                elif event.key == pygame.K_DOWN:
+                    selected_option = (selected_option + 1) % len(options)
+                elif event.key == pygame.K_RETURN:
+                    if selected_option == 0:
+                        return 'single'
+                    elif selected_option == 1:
+                        return 'multi'
+                    elif selected_option == 2:
+                        credits()
+                    elif selected_option == 3:
+                        pygame.quit()
+                        sys.exit()
+            elif event.type == pygame.JOYBUTTONDOWN:
+                if ((joystick1 and event.joy == joystick1.get_id()) or (joystick2 and event.joy == joystick2.get_id())) and event.button == 1:
+                    # B button on either controller quits from main menu
+                    running = False
+                    return None
+                if (joystick1 and event.joy == joystick1.get_id()) or (joystick2 and event.joy == joystick2.get_id()):
+                    if event.button == 0:
+                        if selected_option == 0:
+                            return 'single'
+                        elif selected_option == 1:
+                            return 'multi'
+                        elif selected_option == 2:
+                            credits()
+                        elif selected_option == 3:
+                            pygame.quit()
+                            sys.exit()
+            elif event.type == pygame.JOYAXISMOTION:
+                if (joystick1 and event.joy == joystick1.get_id()) or (joystick2 and event.joy == joystick2.get_id()):
+                    if event.axis == 1:
+                        if event.value < -0.5:
+                            selected_option = (selected_option - 1) % len(options)
+                            pygame.time.wait(200)
+                        elif event.value > 0.5:
+                            selected_option = (selected_option + 1) % len(options)
+                            pygame.time.wait(200)
+            elif event.type == pygame.JOYHATMOTION:
+                if (joystick1 and event.joy == joystick1.get_id()) or (joystick2 and event.joy == joystick2.get_id()):
+                    hat = (joystick1 if event.joy == joystick1.get_id() else joystick2).get_hat(0)
+                    if hat[1] == 1:
+                        selected_option = (selected_option - 1) % len(options)
+                    elif hat[1] == -1:
+                        selected_option = (selected_option + 1) % len(options)
+
 def single_player_menu():
     global running, cars_per_spawn, difficulty 
     play_music(music_MainMenu)
@@ -450,8 +363,8 @@ def single_player_menu():
                 sys.exit()
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-                    running = False
-                    return
+                    # Go back to main menu
+                    return None
                 elif event.key == pygame.K_UP:
                     selected_option = (selected_option - 1) % len(options)
                 elif event.key == pygame.K_DOWN:
@@ -465,7 +378,7 @@ def single_player_menu():
                         difficulty = 2
                     elif selected_option == 3:
                         difficulty = 3
-                    return
+                    return 'start'
             elif event.type == pygame.JOYAXISMOTION:
                 if joystick2 and event.joy == joystick2.get_id():
                     if event.axis == 1:
@@ -484,7 +397,7 @@ def single_player_menu():
                         selected_option = (selected_option + 1) % len(options)
             elif event.type == pygame.JOYBUTTONDOWN:
                 if (joystick1 and event.joy == joystick1.get_id() and event.button == 1) or (joystick2 and event.joy == joystick2.get_id() and event.button == 1):
-                    # B button on either controller goes back
+                    # B button on either controller goes back to main menu
                     return
                 if joystick2 and event.joy == joystick2.get_id() and event.button == 0:
                     if selected_option == 0:
@@ -495,73 +408,7 @@ def single_player_menu():
                         difficulty = 2
                     elif selected_option == 3:
                         difficulty = 3
-                    return
-
-def main_menu():
-    global running
-    play_music(music_MainMenu)
-    selected_option = 0
-    options = ["Single Player", "Multiplayer", "Credits", "Quit"]
-    while running:
-        win.fill((100, 100, 100))
-        draw_text(win, "Child in Traffic", (200, 200, 200), LARGE_TEXT_SIZE, width // 2, height // 6)
-        draw_text(win, "Choose a Mode", (200, 200, 200), MEDIUM_TEXT_SIZE, width // 2, height // 3)
-        for i, option in enumerate(options):
-            color = (255, 255, 255) if i == selected_option else (200, 200, 200)
-            draw_text(win, option, color, MEDIUM_TEXT_SIZE, width // 2, height // 2 + i * (MEDIUM_TEXT_SIZE + 10))
-        pygame.display.update()
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    running = False
-                elif event.key == pygame.K_UP:
-                    selected_option = (selected_option - 1) % len(options)
-                elif event.key == pygame.K_DOWN:
-                    selected_option = (selected_option + 1) % len(options)
-                elif event.key == pygame.K_RETURN:
-                    if selected_option == 0:
-                        return 'single'
-                    elif selected_option == 1:
-                        return 'multi'
-                    elif selected_option == 2:
-                        credits()
-                    elif selected_option == 3:
-                        pygame.quit()
-                        sys.exit()
-            elif event.type == pygame.JOYBUTTONDOWN:
-                if (joystick1 and event.joy == joystick1.get_id()) or (joystick2 and event.joy == joystick2.get_id()):
-                    if event.button == 0:
-                        if selected_option == 0:
-                            return 'single'
-                        elif selected_option == 1:
-                            return 'multi'
-                        elif selected_option == 2:
-                            credits()
-                        elif selected_option == 3:
-                            pygame.quit()
-                            sys.exit()
-                    elif event.button == 1:
-                        pygame.quit()
-                        sys.exit()
-            elif event.type == pygame.JOYAXISMOTION:
-                if (joystick1 and event.joy == joystick1.get_id()) or (joystick2 and event.joy == joystick2.get_id()):
-                    if event.axis == 1:
-                        if event.value < -0.5:
-                            selected_option = (selected_option - 1) % len(options)
-                            pygame.time.wait(200)
-                        elif event.value > 0.5:
-                            selected_option = (selected_option + 1) % len(options)
-                            pygame.time.wait(200)
-            elif event.type == pygame.JOYHATMOTION:
-                if (joystick1 and event.joy == joystick1.get_id()) or (joystick2 and event.joy == joystick2.get_id()):
-                    hat = (joystick1 if event.joy == joystick1.get_id() else joystick2).get_hat(0)
-                    if hat[1] == 1:
-                        selected_option = (selected_option - 1) % len(options)
-                    elif hat[1] == -1:
-                        selected_option = (selected_option + 1) % len(options)
+                    return 'start'
 
 def multiplayer_menu():
     global running, cars_per_spawn, difficulty
@@ -582,7 +429,7 @@ def multiplayer_menu():
                 sys.exit()
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-                    running = False
+                    # Go back to main menu
                     return None
                 elif event.key == pygame.K_UP:
                     selected_option = (selected_option - 1) % len(options)
@@ -590,7 +437,7 @@ def multiplayer_menu():
                     selected_option = (selected_option + 1) % len(options)
                 elif event.key == pygame.K_RETURN:
                     difficulty = selected_option
-                    return
+                    return 'start'
             elif event.type == pygame.JOYAXISMOTION:
                 if (joystick1 and event.joy == joystick1.get_id()) or (joystick2 and event.joy == joystick2.get_id()):
                     if event.axis == 1:
@@ -608,10 +455,177 @@ def multiplayer_menu():
                     elif hat[1] == -1:
                         selected_option = (selected_option + 1) % len(options)
             elif event.type == pygame.JOYBUTTONDOWN:
-                if (joystick1 and event.joy == joystick1.get_id()) or (joystick2 and event.joy == joystick2.get_id()):
-                    if event.button == 0:
-                        difficulty = selected_option
-                        return
+                if (joystick1 and event.joy == joystick1.get_id() and event.button == 1) or (joystick2 and event.joy == joystick2.get_id() and event.button == 1):
+                    # B button on either controller goes back to main menu
+                    return None
+                if ((joystick1 and event.joy == joystick1.get_id()) or (joystick2 and event.joy == joystick2.get_id())) and event.button == 0:
+                    difficulty = selected_option
+                    return 'start'
+
+def main_game_loop():
+    global running, game_over, score_saved, is_paused, player_score, selected_backstory, rectangles, last_rect_creation_time, rect_creation_interval, ramp_up, car_counter, point_increase_timer, score_increment_period, difficulty
+    while running:
+        mode = main_menu()
+        if mode == 'single':
+            single_player_menu()
+            player_name = get_name()
+            play_music(music_Game)
+            while running:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        running = False
+                    elif event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_ESCAPE:
+                            is_paused = True
+                    elif event.type == pygame.JOYBUTTONDOWN:
+                        if ((joystick1 and event.joy == joystick1.get_id()) or (joystick2 and event.joy == joystick2.get_id())) and event.button == 1:
+                            is_paused = True
+                        elif joystick1 and event.joy == joystick1.get_id():
+                            if event.button == 0:
+                                if game_over:
+                                    running = False
+                        elif joystick2 and event.joy == joystick2.get_id():
+                            if event.button == 0:
+                                if game_over:
+                                    running = False
+                if game_over:
+                    pygame.mixer.music.stop()
+                    win.fill((100, 100, 100))
+                    draw_text(win, "Game Over", (200, 200, 200), LARGE_TEXT_SIZE, width // 2, height // 3 - 60)
+                    draw_text(win, "Press any key to play again", (200, 200, 200), MEDIUM_TEXT_SIZE, width // 2, height // 3 + 40)
+                    draw_text(win, "Press 'Esc' or 'B' button to quit", (200, 200, 200), MEDIUM_TEXT_SIZE, width // 2, height // 3 + 80)
+                    draw_text(win, f"Your Score: {player_score}", (200, 200, 200), MEDIUM_TEXT_SIZE, width // 2, height // 2)
+                    draw_text(win, "", (200, 200, 200), 15, width // 2, height * 2 // 3 - 40)
+
+                    if not score_saved:
+                        save_score(player_name, player_score)
+                        score_saved = True
+                        selected_backstory = random.choice(backstories)
+
+                    scores = load_scores()
+                    top_scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)[:5]
+                    if top_scores:
+                        draw_text(win, "Top Scores:", (200, 200, 200), MEDIUM_TEXT_SIZE, width // 2, height // 2 + 100)
+                        y_offset = 0
+                        for i, (name, score) in enumerate(top_scores):
+                            draw_text(win, f"{i+1}. {name}: {score}", (200, 200, 200), MEDIUM_TEXT_SIZE, width // 2, height // 2 + 150 + y_offset)
+                            y_offset += MEDIUM_TEXT_SIZE + 6
+
+                    # Display only one backstory, split by \n
+                    backstory_lines = selected_backstory.split('\n')
+                    for i, line in enumerate(backstory_lines):
+                        draw_text(win, line, (200, 200, 200), MEDIUM_TEXT_SIZE, width // 2, height - 100 + i * (MEDIUM_TEXT_SIZE + 4))
+
+                    pygame.display.update()
+                    for event in pygame.event.get():
+                        if event.type == pygame.KEYDOWN:
+                            if event.key == pygame.K_ESCAPE:
+                                running = False
+                            else:
+                                reset_game()
+                        elif event.type == pygame.JOYBUTTONDOWN:
+                            if joystick1:
+                                if event.button == 1:  # B button
+                                    running = False
+                                else:
+                                    reset_game()
+                elif is_paused:
+                    pause_menu_display()
+                else:
+                    keys = pygame.key.get_pressed()
+
+                    # Keyboard movement
+                    x_axis_changed, y_axis_changed = 0, 0
+                    if keys[pygame.K_DOWN] or keys[pygame.K_UP]:
+                        y_axis_changed = 1
+                    if keys[pygame.K_LEFT] or keys[pygame.K_RIGHT]:
+                        x_axis_changed = 1
+                    if keys[pygame.K_LEFT]:
+                        player.x -= player.speed / (1 + (.4 * y_axis_changed))
+                    elif keys[pygame.K_RIGHT]:
+                        player.x += player.speed / (1 + (.4 * y_axis_changed))
+                    if keys[pygame.K_UP]:
+                        player.y -= player.speed / (1 + (.4 * x_axis_changed))
+                    elif keys[pygame.K_DOWN]:
+                        player.y += player.speed / (1 + (.4 * x_axis_changed))
+                    # Joystick 1 (controller 1, player 1)
+                    if joystick1:
+                        axis0 = joystick1.get_axis(0)
+                        axis1 = joystick1.get_axis(1)
+                        player.x += (axis0 * player.speed) / (1 + (.4 * abs(axis1)))
+                        player.y += (axis1 * player.speed) / (1 + (.4 * abs(axis0)))
+
+                    player.x = max(player.radius, min(player.x, width - player.radius))
+                    player.y = max(player.radius, min(player.y, height - player.radius))
+
+                    for rect in rectangles:
+                        rect.update()
+                    rectangles = [rect for rect in rectangles if not rect.is_off_screen()]
+
+                    for rect in rectangles:
+                        if player.collide_with(rect):
+                            play_sfx(sfx_Death)
+                            game_over = True
+                            break
+
+                    if difficulty == 0:
+                        cars_per_spawn = 1
+                    elif difficulty == 1:
+                        cars_per_spawn = 2
+                    elif difficulty == 2:
+                        cars_per_spawn = 3
+                    elif difficulty == 3 and player_score < 21:
+                        ramp_up +=1
+                        cars_per_spawn = 0
+                    elif difficulty == 3 and player_score >= 21:
+                        cars_per_spawn = 50
+
+                    current_time = pygame.time.get_ticks()
+                    time_until_next_rect = max(0, int(rect_creation_interval - (current_time - last_rect_creation_time)))
+                    if current_time - last_rect_creation_time >= rect_creation_interval:
+                        last_rect_creation_time = current_time
+                        for i in range(cars_per_spawn):
+                            rect_x = random.randint(0, width - 50)
+                            rect_y = -50
+                            rect_width = 50
+                            rect_height = random.randint(50, 150)
+                            rect_color = (30, 30, 30)
+                            rect_speed = random.randint(5, 10)
+                            rectangles.append(Rectangle(rect_x, rect_y, rect_width, rect_height, rect_color, rect_speed))
+
+                        car_counter += cars_per_spawn
+                        ramp_up += 0.06
+                        rect_creation_interval = max(min_rect_creation_interval, rect_creation_interval - 300)
+
+                    if point_increase_timer > score_increment_period[difficulty]:
+                        player_score += 1
+                        point_increase_timer = 0
+                    else:
+                        point_increase_timer += 1
+
+                    if player_score >= 500 and difficulty != 3:
+                        win.fill((100, 100, 100))
+                        draw_text(win, "Is this too easy?", (200, 200, 200), 72, width // 2, height // 3)
+                        draw_text(win, "Difficulty set to I4-MODE!", (200, 200, 200), 36, width // 2, height // 2)
+                        pygame.display.update()
+                        pygame.time.wait(3000)  # Wait for 3 seconds
+                        difficulty = 3
+
+                    win.fill((100, 100, 100))
+                    player.draw(win)
+
+                    for rect in rectangles:
+                        rect.draw(win)
+
+                    draw_text(win, f"Next Car in: {time_until_next_rect/1000:.1f} seconds", (200, 200, 200), MEDIUM_TEXT_SIZE, width // 2, 30)
+                    draw_text(win, f"Score: {player_score}", (200, 200, 200), MEDIUM_TEXT_SIZE, width // 2 + 10, 70)
+
+                    pygame.display.update()
+                    clock.tick(60)
+        elif mode == 'multi':
+            multiplayer_game_loop()
+        else:
+            break
 
 def multiplayer_game_loop():
     global running, game_over, is_paused, player_score, score_saved, selected_backstory, car_counter, ramp_up, rect_creation_interval, last_rect_creation_time, rectangles, point_increase_timer, score_increment_period, difficulty
@@ -637,12 +651,14 @@ def multiplayer_game_loop():
                 if event.key == pygame.K_ESCAPE:
                     is_paused = True
             elif event.type == pygame.JOYBUTTONDOWN:
-                if joystick1:
-                    if event.button == 0:
-                        if game_over:
-                            running = False
-                    elif event.button == 1:
-                        game_over = True
+                if ((joystick1 and event.joy == joystick1.get_id()) or (joystick2 and event.joy == joystick2.get_id())) and event.button == 1:
+                    is_paused = True
+                if joystick1 and event.joy == joystick1.get_id() and event.button == 0:
+                    if game_over:
+                        running = False
+                if joystick2 and event.joy == joystick2.get_id() and event.button == 0:
+                    if game_over:
+                        running = False
             if not game_over and not is_paused:
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
@@ -818,166 +834,165 @@ def multiplayer_game_loop():
     pygame.quit()
     sys.exit()
 
-def main_game_loop():
-    global running, game_over, score_saved, is_paused, player_score, selected_backstory, rectangles, last_rect_creation_time, rect_creation_interval, ramp_up, car_counter, point_increase_timer, score_increment_period, difficulty
-    while running:
-        mode = main_menu()
-        if mode == 'single':
-            single_player_menu()
-            player_name = get_input()
-            play_music(music_Game)
-            while running:
-                for event in pygame.event.get():
-                    if event.type == pygame.QUIT:
-                        running = False
-                    elif event.type == pygame.KEYDOWN:
-                        if event.key == pygame.K_ESCAPE:
-                            is_paused = True
-                    elif event.type == pygame.JOYBUTTONDOWN:
-                        if joystick1:
-                            if event.button == 0:
-                                if game_over:
-                                    running = False
-                            elif event.button == 1:
-                                game_over = True
-                if game_over:
-                    pygame.mixer.music.stop()
-                    win.fill((100, 100, 100))
-                    draw_text(win, "Game Over", (200, 200, 200), LARGE_TEXT_SIZE, width // 2, height // 3 - 60)
-                    draw_text(win, "Press any key to play again", (200, 200, 200), MEDIUM_TEXT_SIZE, width // 2, height // 3 + 40)
-                    draw_text(win, "Press 'Esc' or 'B' button to quit", (200, 200, 200), MEDIUM_TEXT_SIZE, width // 2, height // 3 + 80)
-                    draw_text(win, f"Your Score: {player_score}", (200, 200, 200), MEDIUM_TEXT_SIZE, width // 2, height // 2)
-                    draw_text(win, "", (200, 200, 200), 15, width // 2, height * 2 // 3 - 40)
+def get_name():
+    keys_layout = [
+        "1 2 3 4 5 6 7 8 9 0",
+        "Q W E R T Y U I O P",
+        "A S D F G H J K L",
+        "Z X C V B N M",
+        "BACK SPACE ENTER"
+    ]
+    text = ""
+    row, col = 0, 0
+    key_width, key_height = 60, 60
+    spacing = 10
+    cursor_blink = True
+    cursor_timer = 0
 
-                    if not score_saved:
-                        save_score(player_name, player_score)
-                        score_saved = True
-                        selected_backstory = random.choice(backstories)
+    while True:
+        win.fill((200, 200, 200))
+        draw_text(win, "Enter your name:", (30, 30, 30), MEDIUM_TEXT_SIZE, width // 2, height // 6)
+        draw_text(win, text, (30, 30, 30), MEDIUM_TEXT_SIZE, width // 2, height // 3)
 
-                    scores = load_scores()
-                    top_scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)[:5]
-                    if top_scores:
-                        draw_text(win, "Top Scores:", (200, 200, 200), MEDIUM_TEXT_SIZE, width // 2, height // 2 + 100)
-                        y_offset = 0
-                        for i, (name, score) in enumerate(top_scores):
-                            draw_text(win, f"{i+1}. {name}: {score}", (200, 200, 200), MEDIUM_TEXT_SIZE, width // 2, height // 2 + 150 + y_offset)
-                            y_offset += MEDIUM_TEXT_SIZE + 6
+        cursor_timer += 1
+        if cursor_timer % 1000 == 0: 
+            cursor_blink = not cursor_blink
 
-                    # Display only one backstory, split by \n
-                    backstory_lines = selected_backstory.split('\n')
-                    for i, line in enumerate(backstory_lines):
-                        draw_text(win, line, (200, 200, 200), MEDIUM_TEXT_SIZE, width // 2, height - 100 + i * (MEDIUM_TEXT_SIZE + 4))
+        if cursor_blink:
+            draw_text(win, "|", (30, 30, 30), MEDIUM_TEXT_SIZE, width // 2 + font.size(text)[0] // 2, height // 3)
 
-                    pygame.display.update()
-                    for event in pygame.event.get():
-                        if event.type == pygame.KEYDOWN:
-                            if event.key == pygame.K_ESCAPE:
-                                running = False
-                            else:
-                                reset_game()
-                        elif event.type == pygame.JOYBUTTONDOWN:
-                            if joystick1:
-                                if event.button == 1:  # B button
-                                    running = False
-                                else:
-                                    reset_game()
-                elif is_paused:
-                    pause_menu_display()
+        if joystick1 and pygame.joystick.get_count() > 0:
+            for r, row_keys in enumerate(keys_layout):
+                row_keys_split = row_keys.split()
+                for c, key in enumerate(row_keys_split):
+                    key_x = (width // 2 - (len(row_keys_split) * (key_width + spacing)) // 2) + c * (key_width + spacing)
+                    key_y = (height // 2 + r * (key_height + spacing))
+                    key_rect = pygame.Rect(key_x, key_y, key_width, key_height)
+                    pygame.draw.rect(win, (0, 0, 0) if (r, c) == (row, col) else (255, 255, 255), key_rect)
+                    draw_text(win, key, (0, 0, 0), MEDIUM_TEXT_SIZE, key_x + key_width // 2, key_y + 10)
+
+        pygame.display.flip()
+
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == KEYDOWN:
+                if event.key == K_BACKSPACE:
+                    text = text[:-1]
+                elif event.key == K_RETURN:
+                    return text
                 else:
-                    keys = pygame.key.get_pressed()
+                    text += event.unicode
+            elif joystick1 and pygame.joystick.get_count() > 0:
+                if event.type == pygame.JOYHATMOTION:
+                    hat = joystick1.get_hat(0)
+                    row_keys_split = keys_layout[row].split()
+                    if hat[0] == 1:
+                        col = min(col + 1, len(row_keys_split) - 1)
+                    elif hat[0] == -1:
+                        col = max(col - 1, 0)
+                    if hat[1] == 1:
+                        row = max(row - 1, 0)
+                        col = min(col, len(keys_layout[row].split()) - 1)
+                    elif hat[1] == -1:
+                        row = min(row + 1, len(keys_layout) - 1)
+                        col = min(col, len(keys_layout[row].split()) - 1)
+                elif event.type == pygame.JOYAXISMOTION:
+                    if event.axis == 0:
+                        if event.value < -0.5:
+                            col = max(col - 1, 0)
+                        elif event.value > 0.5:
+                            col = min(col + 1, len(keys_layout[row].split()) - 1)
+                    elif event.axis == 1:
+                        if event.value < -0.5:
+                            row = max(row - 1, 0)
+                            col = min(col, len(keys_layout[row].split()) - 1)
+                        elif event.value > 0.5:
+                            row = min(row + 1, len(keys_layout) - 1)
+                            col = min(col, len(keys_layout[row].split()) - 1)
+                elif event.type == pygame.JOYBUTTONDOWN:
+                    if event.button == 0:  # A button
+                        key = keys_layout[row].split()[col]
+                        if key == "BACK":
+                            text = text[:-1]
+                        elif key == "SPACE":
+                            text += " "
+                        elif key == "ENTER":
+                            return text
+                        else:
+                            text += key
+                    elif event.button == 1:  # B button
+                        return text
+                    elif event.button == 2:  
+                        text = text[:-1]
 
-                    # Keyboard movement
-                    x_axis_changed, y_axis_changed = 0, 0
-                    if keys[pygame.K_DOWN] or keys[pygame.K_UP]:
-                        y_axis_changed = 1
-                    if keys[pygame.K_LEFT] or keys[pygame.K_RIGHT]:
-                        x_axis_changed = 1
-                    if keys[pygame.K_LEFT]:
-                        player.x -= player.speed / (1 + (.4 * y_axis_changed))
-                    elif keys[pygame.K_RIGHT]:
-                        player.x += player.speed / (1 + (.4 * y_axis_changed))
-                    if keys[pygame.K_UP]:
-                        player.y -= player.speed / (1 + (.4 * x_axis_changed))
-                    elif keys[pygame.K_DOWN]:
-                        player.y += player.speed / (1 + (.4 * x_axis_changed))
-                    # Joystick 1 (controller 1, player 1)
-                    if joystick1:
-                        axis0 = joystick1.get_axis(0)
-                        axis1 = joystick1.get_axis(1)
-                        player.x += (axis0 * player.speed) / (1 + (.4 * abs(axis1)))
-                        player.y += (axis1 * player.speed) / (1 + (.4 * abs(axis0)))
+def pause_menu_display():
+    global is_paused
+    options = ["Resume", "Quit"]
+    selected_option = 0
+    while is_paused:
+        win.fill((50, 50, 50))
+        draw_text(win, "Paused", (200, 200, 200), LARGE_TEXT_SIZE, width // 2, height // 4)
+        for i, option in enumerate(options):
+            color = (255, 255, 255) if i == selected_option else (200, 200, 200)
+            draw_text(win, option, color, MEDIUM_TEXT_SIZE, width // 2, height // 2 + i * (MEDIUM_TEXT_SIZE + 10))
+        pygame.display.update()
+        
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE or event.key == pygame.K_RETURN:
+                    if selected_option == 0:
+                        is_paused = False
+                    elif selected_option == 1:
+                        pygame.quit()
+                        sys.exit()
+                elif event.key == pygame.K_UP:
+                    selected_option = (selected_option - 1) % len(options)
+                elif event.key == pygame.K_DOWN:
+                    selected_option = (selected_option + 1) % len(options)
+            elif event.type == pygame.JOYBUTTONDOWN:
+                if joystick1:
+                    if event.button == 0:  # A button
+                        if selected_option == 0:
+                            is_paused = False
+                        elif selected_option == 1:
+                            pygame.quit()
+                            sys.exit()
+            elif event.type == pygame.JOYAXISMOTION:
+                if joystick1:
+                    if event.axis == 1:
+                        if event.value < -0.5:
+                            selected_option = (selected_option - 1) % len(options)
+                            pygame.time.wait(200)  # Add delay to prevent rapid scrolling
+                        elif event.value > 0.5:
+                            selected_option = (selected_option + 1) % len(options)
+                            pygame.time.wait(200)  # Add delay to prevent rapid scrolling
+            elif event.type == pygame.JOYHATMOTION:
+                if joystick1:
+                    hat = joystick1.get_hat(0)
+                    if hat[1] == 1:
+                        selected_option = (selected_option - 1) % len(options)
+                    elif hat[1] == -1:
+                        selected_option = (selected_option + 1) % len(options)
 
-                    player.x = max(player.radius, min(player.x, width - player.radius))
-                    player.y = max(player.radius, min(player.y, height - player.radius))
-
-                    for rect in rectangles:
-                        rect.update()
-                    rectangles = [rect for rect in rectangles if not rect.is_off_screen()]
-
-                    for rect in rectangles:
-                        if player.collide_with(rect):
-                            play_sfx(sfx_Death)
-                            game_over = True
-                            break
-
-                    if difficulty == 0:
-                        cars_per_spawn = 1
-                    elif difficulty == 1:
-                        cars_per_spawn = 2
-                    elif difficulty == 2:
-                        cars_per_spawn = 3
-                    elif difficulty == 3 and player_score < 21:
-                        ramp_up +=1
-                        cars_per_spawn = 0
-                    elif difficulty == 3 and player_score >= 21:
-                        cars_per_spawn = 50
-
-                    current_time = pygame.time.get_ticks()
-                    time_until_next_rect = max(0, int(rect_creation_interval - (current_time - last_rect_creation_time)))
-                    if current_time - last_rect_creation_time >= rect_creation_interval:
-                        last_rect_creation_time = current_time
-                        for i in range(cars_per_spawn):
-                            rect_x = random.randint(0, width - 50)
-                            rect_y = -50
-                            rect_width = 50
-                            rect_height = random.randint(50, 150)
-                            rect_color = (30, 30, 30)
-                            rect_speed = random.randint(5, 10)
-                            rectangles.append(Rectangle(rect_x, rect_y, rect_width, rect_height, rect_color, rect_speed))
-
-                        car_counter += cars_per_spawn
-                        ramp_up += 0.06
-                        rect_creation_interval = max(min_rect_creation_interval, rect_creation_interval - 300)
-
-                    if point_increase_timer > score_increment_period[difficulty]:
-                        player_score += 1
-                        point_increase_timer = 0
-                    else:
-                        point_increase_timer += 1
-
-                    if player_score >= 500 and difficulty != 3:
-                        win.fill((100, 100, 100))
-                        draw_text(win, "Is this too easy?", (200, 200, 200), 72, width // 2, height // 3)
-                        draw_text(win, "Difficulty set to I4-MODE!", (200, 200, 200), 36, width // 2, height // 2)
-                        pygame.display.update()
-                        pygame.time.wait(3000)  # Wait for 3 seconds
-                        difficulty = 3
-
-                    win.fill((100, 100, 100))
-                    player.draw(win)
-
-                    for rect in rectangles:
-                        rect.draw(win)
-
-                    draw_text(win, f"Next Car in: {time_until_next_rect/1000:.1f} seconds", (200, 200, 200), MEDIUM_TEXT_SIZE, width // 2, 30)
-                    draw_text(win, f"Score: {player_score}", (200, 200, 200), MEDIUM_TEXT_SIZE, width // 2 + 10, 70)
-
-                    pygame.display.update()
-                    clock.tick(60)
-        elif mode == 'multi':
-            multiplayer_game_loop()
-        else:
-            break
+def reset_game():
+    global player, rectangles, player_score, game_over, score_saved, last_rect_creation_time, rect_creation_interval, ramp_up, car_counter
+    player = Player(width // 2, height // 2, 20, (200, 200, 200))
+    rectangles = []
+    player_score = 0
+    game_over = False
+    score_saved = False
+    last_rect_creation_time = pygame.time.get_ticks()
+    rect_creation_interval = random.randint(2000, 3000)
+    ramp_up = 1
+    car_counter = 0
+    single_player_menu()
+    get_name()
+    play_music(music_Game)
 
 def credits():
     main_credits = [
