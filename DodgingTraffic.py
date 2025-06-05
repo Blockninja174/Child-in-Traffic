@@ -871,6 +871,12 @@ def main_game_loop():
                                 running = False
                             else:
                                 reset_game()
+                        elif event.type == pygame.JOYBUTTONDOWN:
+                            if joystick1:
+                                if event.button == 1:  # B button
+                                    running = False
+                                else:
+                                    reset_game()
                 elif is_paused:
                     pause_menu_display()
                 else:
