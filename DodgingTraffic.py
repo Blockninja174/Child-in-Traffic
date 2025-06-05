@@ -614,8 +614,9 @@ def multiplayer_game_loop():
     global running, game_over, is_paused, player_score, score_saved, selected_backstory, car_counter, ramp_up, rect_creation_interval, last_rect_creation_time, rectangles, point_increase_timer, score_increment_period, difficulty
     multiplayer_menu()
     play_music(music_Game)
-    player1 = Player(2 * width // 3, height // 2, 20, (200, 200, 200))
-    player2 = Player(width // 3, height // 2, 20, (0, 200, 0))
+    # Swap starting positions and colors
+    player1 = Player(width // 3, height // 2, 20, (0, 200, 0))  # Player 1: left, green
+    player2 = Player(2 * width // 3, height // 2, 20, (200, 200, 200))  # Player 2: right, gray
     rectangles = []
     player_score = 0
     game_over = False
@@ -689,44 +690,44 @@ def multiplayer_game_loop():
             pause_menu_display()
         else:
             keys = pygame.key.get_pressed()
-            # Player 1: Arrow keys or joystick1
+            # Player 1: WASD or joystick2 (swapped)
             x_axis_changed1, y_axis_changed1 = 0, 0
-            if keys[pygame.K_DOWN] or keys[pygame.K_UP]:
-                y_axis_changed1 = 1
-            if keys[pygame.K_LEFT] or keys[pygame.K_RIGHT]:
-                x_axis_changed1 = 1
-            if keys[pygame.K_LEFT]:
-                player1.x -= player1.speed / (1 + (.4 * y_axis_changed1))
-            elif keys[pygame.K_RIGHT]:
-                player1.x += player1.speed / (1 + (.4 * y_axis_changed1))
-            if keys[pygame.K_UP]:
-                player1.y -= player1.speed / (1 + (.4 * x_axis_changed1))
-            elif keys[pygame.K_DOWN]:
-                player1.y += player1.speed / (1 + (.4 * x_axis_changed1))
-            # Joystick 1 (controller 1, player 1)
-            if joystick1:
-                axis0 = joystick1.get_axis(0)
-                axis1 = joystick1.get_axis(1)
-                player1.x += (axis0 * player1.speed) / (1 + (.4 * abs(axis1)))
-                player1.y += (axis1 * player1.speed) / (1 + (.4 * abs(axis0)))
-            # Player 2: WASD or joystick2
-            x_axis_changed2, y_axis_changed2 = 0, 0
             if keys[pygame.K_s] or keys[pygame.K_w]:
-                y_axis_changed2 = 1
+                y_axis_changed1 = 1
             if keys[pygame.K_a] or keys[pygame.K_d]:
-                x_axis_changed2 = 1
+                x_axis_changed1 = 1
             if keys[pygame.K_a]:
-                player2.x -= player2.speed / (1 + (.4 * y_axis_changed2))
+                player1.x -= player1.speed / (1 + (.4 * y_axis_changed1))
             elif keys[pygame.K_d]:
-                player2.x += player2.speed / (1 + (.4 * y_axis_changed2))
+                player1.x += player1.speed / (1 + (.4 * y_axis_changed1))
             if keys[pygame.K_w]:
-                player2.y -= player2.speed / (1 + (.4 * x_axis_changed2))
+                player1.y -= player1.speed / (1 + (.4 * x_axis_changed1))
             elif keys[pygame.K_s]:
-                player2.y += player2.speed / (1 + (.4 * x_axis_changed2))
-            # Joystick 2 (controller 2, player 2)
+                player1.y += player1.speed / (1 + (.4 * x_axis_changed1))
+            # Joystick 2 (controller 2, player 1)
             if joystick2:
                 axis0 = joystick2.get_axis(0)
                 axis1 = joystick2.get_axis(1)
+                player1.x += (axis0 * player1.speed) / (1 + (.4 * abs(axis1)))
+                player1.y += (axis1 * player1.speed) / (1 + (.4 * abs(axis0)))
+            # Player 2: Arrow keys or joystick1 (swapped)
+            x_axis_changed2, y_axis_changed2 = 0, 0
+            if keys[pygame.K_DOWN] or keys[pygame.K_UP]:
+                y_axis_changed2 = 1
+            if keys[pygame.K_LEFT] or keys[pygame.K_RIGHT]:
+                x_axis_changed2 = 1
+            if keys[pygame.K_LEFT]:
+                player2.x -= player2.speed / (1 + (.4 * y_axis_changed2))
+            elif keys[pygame.K_RIGHT]:
+                player2.x += player2.speed / (1 + (.4 * y_axis_changed2))
+            if keys[pygame.K_UP]:
+                player2.y -= player2.speed / (1 + (.4 * x_axis_changed2))
+            elif keys[pygame.K_DOWN]:
+                player2.y += player2.speed / (1 + (.4 * x_axis_changed2))
+            # Joystick 1 (controller 1, player 2)
+            if joystick1:
+                axis0 = joystick1.get_axis(0)
+                axis1 = joystick1.get_axis(1)
                 player2.x += (axis0 * player2.speed) / (1 + (.4 * abs(axis1)))
                 player2.y += (axis1 * player2.speed) / (1 + (.4 * abs(axis0)))
             # Clamp player positions
