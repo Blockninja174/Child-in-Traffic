@@ -615,8 +615,8 @@ def multiplayer_game_loop():
     multiplayer_menu()
     play_music(music_Game)
     # Swap starting positions and colors
-    player1 = Player(width // 3, height // 2, 20, (0, 200, 0))  # Player 1: left, green
-    player2 = Player(2 * width // 3, height // 2, 20, (200, 200, 200))  # Player 2: right, gray
+    player1 = Player(width // 3, height // 2, 20, (200, 200, 200))  # Player 1: left, gray
+    player2 = Player(2 * width // 3, height // 2, 20, (0, 200, 0))  # Player 2: right, green
     rectangles = []
     player_score = 0
     game_over = False
