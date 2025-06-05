@@ -440,13 +440,10 @@ def single_player_menu():
         win.fill((100, 100, 100))
         draw_text(win, "Child in Traffic (True Story)", (200, 200, 200), LARGE_TEXT_SIZE, width // 2, height // 6)
         draw_text(win, "Select Difficulty:", (200, 200, 200), MEDIUM_TEXT_SIZE, width // 2, height // 3)
-
         for i, option in enumerate(options):
             color = (255, 255, 255) if i == selected_option else (200, 200, 200)
             draw_text(win, option, color, MEDIUM_TEXT_SIZE, width // 2, height // 2 + i * (MEDIUM_TEXT_SIZE + 10))
-
         pygame.display.update()
-
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -470,31 +467,32 @@ def single_player_menu():
                         difficulty = 3
                     return
             elif event.type == pygame.JOYAXISMOTION:
-                if joystick1:
+                if (joystick1 and event.joy == joystick1.get_id()) or (joystick2 and event.joy == joystick2.get_id()):
                     if event.axis == 1:
                         if event.value < -0.5:
                             selected_option = (selected_option - 1) % len(options)
-                            pygame.time.wait(50)  
+                            pygame.time.wait(50)
                         elif event.value > 0.5:
                             selected_option = (selected_option + 1) % len(options)
-                            pygame.time.wait(50)  
+                            pygame.time.wait(50)
             elif event.type == pygame.JOYHATMOTION:
-                if joystick1:
-                    hat = joystick1.get_hat(0)
+                if (joystick1 and event.joy == joystick1.get_id()) or (joystick2 and event.joy == joystick2.get_id()):
+                    hat = (joystick1 if event.joy == joystick1.get_id() else joystick2).get_hat(0)
                     if hat[1] == 1:
                         selected_option = (selected_option - 1) % len(options)
                     elif hat[1] == -1:
                         selected_option = (selected_option + 1) % len(options)
             elif event.type == pygame.JOYBUTTONDOWN:
-                if selected_option == 0:
-                    difficulty = 0
-                elif selected_option == 1:
-                    difficulty = 1
-                elif selected_option == 2:
-                    difficulty = 2
-                elif selected_option == 3:
-                    difficulty = 3
-                return
+                if (joystick1 and event.joy == joystick1.get_id()) or (joystick2 and event.joy == joystick2.get_id()):
+                    if selected_option == 0:
+                        difficulty = 0
+                    elif selected_option == 1:
+                        difficulty = 1
+                    elif selected_option == 2:
+                        difficulty = 2
+                    elif selected_option == 3:
+                        difficulty = 3
+                    return
 
 def main_menu():
     global running
@@ -531,21 +529,22 @@ def main_menu():
                         pygame.quit()
                         sys.exit()
             elif event.type == pygame.JOYBUTTONDOWN:
-                if event.button == 0:
-                    if selected_option == 0:
-                        return 'single'
-                    elif selected_option == 1:
-                        return 'multi'
-                    elif selected_option == 2:
-                        credits()
-                    elif selected_option == 3:
+                if (joystick1 and event.joy == joystick1.get_id()) or (joystick2 and event.joy == joystick2.get_id()):
+                    if event.button == 0:
+                        if selected_option == 0:
+                            return 'single'
+                        elif selected_option == 1:
+                            return 'multi'
+                        elif selected_option == 2:
+                            credits()
+                        elif selected_option == 3:
+                            pygame.quit()
+                            sys.exit()
+                    elif event.button == 1:
                         pygame.quit()
                         sys.exit()
-                elif event.button == 1:
-                    pygame.quit()
-                    sys.exit()
             elif event.type == pygame.JOYAXISMOTION:
-                if joystick1:
+                if (joystick1 and event.joy == joystick1.get_id()) or (joystick2 and event.joy == joystick2.get_id()):
                     if event.axis == 1:
                         if event.value < -0.5:
                             selected_option = (selected_option - 1) % len(options)
@@ -554,8 +553,8 @@ def main_menu():
                             selected_option = (selected_option + 1) % len(options)
                             pygame.time.wait(200)
             elif event.type == pygame.JOYHATMOTION:
-                if joystick1:
-                    hat = joystick1.get_hat(0)
+                if (joystick1 and event.joy == joystick1.get_id()) or (joystick2 and event.joy == joystick2.get_id()):
+                    hat = (joystick1 if event.joy == joystick1.get_id() else joystick2).get_hat(0)
                     if hat[1] == 1:
                         selected_option = (selected_option - 1) % len(options)
                     elif hat[1] == -1:
@@ -590,7 +589,7 @@ def multiplayer_menu():
                     difficulty = selected_option
                     return
             elif event.type == pygame.JOYAXISMOTION:
-                if joystick1:
+                if (joystick1 and event.joy == joystick1.get_id()) or (joystick2 and event.joy == joystick2.get_id()):
                     if event.axis == 1:
                         if event.value < -0.5:
                             selected_option = (selected_option - 1) % len(options)
@@ -599,16 +598,17 @@ def multiplayer_menu():
                             selected_option = (selected_option + 1) % len(options)
                             pygame.time.wait(50)
             elif event.type == pygame.JOYHATMOTION:
-                if joystick1:
-                    hat = joystick1.get_hat(0)
+                if (joystick1 and event.joy == joystick1.get_id()) or (joystick2 and event.joy == joystick2.get_id()):
+                    hat = (joystick1 if event.joy == joystick1.get_id() else joystick2).get_hat(0)
                     if hat[1] == 1:
                         selected_option = (selected_option - 1) % len(options)
                     elif hat[1] == -1:
                         selected_option = (selected_option + 1) % len(options)
             elif event.type == pygame.JOYBUTTONDOWN:
-                if event.button == 0:
-                    difficulty = selected_option
-                    return
+                if (joystick1 and event.joy == joystick1.get_id()) or (joystick2 and event.joy == joystick2.get_id()):
+                    if event.button == 0:
+                        difficulty = selected_option
+                        return
 
 def multiplayer_game_loop():
     global running, game_over, is_paused, player_score, score_saved, selected_backstory, car_counter, ramp_up, rect_creation_interval, last_rect_creation_time, rectangles, point_increase_timer, score_increment_period, difficulty
