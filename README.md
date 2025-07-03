@@ -1,5 +1,12 @@
 # Child in Traffic - The Multiplayer Update
 
+## How to Play?
+### Windows:
+Download the latest file for your OS from the [releases page](https://github.com/Blockninja174/Child-in-Traffic/releases).
+
+### Linux:
+Download the source code and run the Linux Version file.
+
 ## What's New?
 Introducing local multiplayer support!
 Compete against your friends to see who can dodge cars the best.
@@ -10,4 +17,4 @@ You are put in the shoes of a child who is stuck in the middle of the highway, w
 The child's goal?
 Don't get run over.
 
-This game was made as a tech demo game for a custom built arcade machine. :)
+This game was made as a tech demo game for a custom built arcade machine :)
