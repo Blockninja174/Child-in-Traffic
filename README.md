@@ -2,7 +2,7 @@
 
 ## How to Play?
 ### Windows:
-Download the latest file for your OS from the [releases page](https://github.com/Blockninja174/Child-in-Traffic/releases).
+Download the latest .exe from the [releases page](https://github.com/Blockninja174/Child-in-Traffic/releases).
 
 ### Linux:
 Download the source code and run the Linux Version file.
