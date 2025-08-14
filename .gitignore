@@ -1,3 +1,5 @@
 scores.txt
 .gitignore
 .github
+.vscode
+.__pycache__
