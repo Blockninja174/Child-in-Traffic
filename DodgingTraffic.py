@@ -573,14 +573,14 @@ def single_player_game(player_name):
                 player.y -= player.speed / (1 + (.4 * x_axis_changed))
             elif keys[pygame.K_DOWN]:
                 player.y += player.speed / (1 + (.4 * x_axis_changed))
-            # Joystick 1 (controller 1, player 1)
-            if joystick1:
-                axis0 = joystick1.get_axis(0)
-                axis1 = joystick1.get_axis(1)
+            # Joystick 2 (controller 2, player 1)
+            if joystick2:
+                axis0 = joystick2.get_axis(0)
+                axis1 = joystick2.get_axis(1)
                 player.x += (axis0 * player.speed) / (1 + (.4 * abs(axis1)))
                 player.y += (axis1 * player.speed) / (1 + (.4 * abs(axis0)))
                 # D-pad (HAT) movement
-                hat = joystick1.get_hat(0)
+                hat = joystick2.get_hat(0)
                 if hat[0] != 0:
                     player.x += hat[0] * player.speed
                 if hat[1] != 0:
